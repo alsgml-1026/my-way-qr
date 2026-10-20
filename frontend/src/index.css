@@ -101,3 +101,38 @@ button { font: inherit; color: inherit; }
 
 /* ───── 개발용 첫 화면 ───── */
 .dev-home { padding-top: 40px; }
+
+.small { font-size: 0.8em; margin-top: 6px; }
+
+/* ───── 모의 키오스크 (/kiosk) ─────
+   왼쪽은 일부러 흔한 키오스크처럼 글씨가 작고 빽빽하게 (비교 대상) */
+.kiosk { display: grid; grid-template-columns: 1fr 380px; min-height: 100vh; background: #2b2b2b; font-size: 13px; }
+.kiosk-menu { background: #fff; color: #222; display: flex; flex-direction: column; }
+.kiosk-top { display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; background: #c8102e; color: #fff; }
+.kiosk-top strong { font-size: 16px; }
+.kiosk-top span { font-size: 11px; opacity: 0.9; }
+.kiosk-tabs { display: flex; gap: 4px; padding: 6px 10px; background: #f1f1f1; border-bottom: 1px solid #ddd; }
+.kiosk-tabs span { padding: 4px 10px; border-radius: 3px; font-size: 11px; color: #555; }
+.kiosk-tabs span.on { background: #c8102e; color: #fff; }
+.kiosk-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 10px; }
+.kiosk-item { border: 1px solid #e3e3e3; border-radius: 4px; padding: 6px; text-align: center; }
+.kiosk-thumb { height: 64px; border-radius: 3px; background: linear-gradient(135deg, #efe6dc, #d9c7b4); margin-bottom: 4px; }
+.kiosk-name { font-size: 12px; font-weight: 700; }
+.kiosk-desc { font-size: 9px; color: #999; }
+.kiosk-price { font-size: 11px; color: #c8102e; font-weight: 700; }
+
+.kiosk-qr { background: #1f4e79; color: #fff; padding: 28px 24px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px; }
+.kiosk-qr h2 { font-size: 24px; margin: 0; }
+.kiosk-qr-lead { font-size: 18px; line-height: 1.5; margin: 0; }
+.kiosk-qr-box { background: #fff; padding: 12px; border-radius: 14px; }
+.kiosk-qr-wait { width: 260px; height: 260px; display: grid; place-items: center; color: #1f4e79; font-size: 18px; }
+.kiosk-qr-points { list-style: none; padding: 0; margin: 4px 0 0; font-size: 17px; font-weight: 700; line-height: 1.8; }
+.kiosk-qr-points li::before { content: '✓ '; color: #ffd400; }
+.kiosk-qr-url { font-size: 10px; opacity: 0.6; word-break: break-all; }
+.kiosk-session { font-size: 12px; opacity: 0.7; }
+.kiosk-done { margin-top: 60px; }
+.kiosk-done-label { font-size: 22px; font-weight: 700; color: #ffd400; }
+.kiosk-done-no { font-size: 120px; font-weight: 900; line-height: 1.1; }
+.kiosk-done-no small { font-size: 36px; margin-left: 6px; }
+.kiosk-done-total { font-size: 20px; font-weight: 700; margin-bottom: 12px; }
+.kiosk .error { color: #ffb4a8; }

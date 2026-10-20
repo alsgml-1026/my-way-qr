@@ -1,19 +1,23 @@
-import { useEffect, useState } from 'react'
-import { Link, Navigate } from 'react-router-dom'
+import { useEffect, useMemo, useState } from 'react'
+import { Link, Navigate, useLocation } from 'react-router-dom'
 import { fetchMenu, won, type Menu } from '../api'
 import { describeProfile, loadProfile, profileAttrs } from '../profile'
+import { readVisit } from '../visit'
 
 // 폰 주문 화면 (오늘 버전: 설정에 맞춰 크기·색이 바뀌는 메뉴 목록)
 // 다음 단계(10/21): AI 화면 변환 결과 적용, 옵션 → 장바구니 → 목업 결제
 export default function PhoneOrderPage() {
+  // QR 주소의 매장·창구를 먼저 저장해 둔다 (설정 화면을 다녀와도 유지)
+  const { search } = useLocation()
+  const visit = useMemo(() => readVisit(search), [search])
   const profile = loadProfile()
   const [menu, setMenu] = useState<Menu | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [picked, setPicked] = useState<string | null>(null)
 
   useEffect(() => {
-    fetchMenu().then(setMenu).catch((e: Error) => setError(e.message))
-  }, [])
+    fetchMenu(visit.store).then(setMenu).catch((e: Error) => setError(e.message))
+  }, [visit.store])
 
   if (!profile) return <Navigate to="/m/setup" replace />
 
@@ -26,6 +30,7 @@ export default function PhoneOrderPage() {
             <span>내 설정: {describeProfile(profile).join(' · ')}</span>
             <Link to="/m/setup" className="link">바꾸기</Link>
           </div>
+          {visit.session && <p className="muted small">키오스크 창구 {visit.session}에 연결됐어요</p>}
         </header>
 
         {error && <p className="error" role="alert">{error} — 서버가 켜져 있는지 확인해 주세요.</p>}

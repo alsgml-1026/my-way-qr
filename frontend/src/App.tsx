@@ -1,19 +1,20 @@
 import { Link, Navigate, Route, Routes } from 'react-router-dom'
 import SetupPage from './pages/SetupPage'
 import PhoneOrderPage from './pages/PhoneOrderPage'
+import KioskPage from './pages/KioskPage'
 
 // 화면 주소
 //   /          개발용 첫 화면 (어디로 갈지 고르기)
 //   /m         폰 주문 화면 — 설정이 없으면 /m/setup 으로 보냄
 //   /m/setup   접근성 설정 화면 (처음 한 번)
-//   /kiosk     키오스크 QR 화면 (10/21 작업 예정)
+//   /kiosk     모의 키오스크 (기본 화면 + 내 방식 QR + 주문번호 표시)
 export default function App() {
   return (
     <Routes>
       <Route path="/" element={<DevHome />} />
       <Route path="/m" element={<PhoneOrderPage />} />
       <Route path="/m/setup" element={<SetupPage />} />
-      <Route path="/kiosk" element={<ComingSoon what="키오스크 QR 화면" />} />
+      <Route path="/kiosk" element={<KioskPage />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )
@@ -29,16 +30,6 @@ function DevHome() {
         <Link className="btn" to="/m/setup">설정 화면 (/m/setup)</Link>
         <Link className="btn" to="/kiosk">키오스크 화면 (/kiosk)</Link>
       </nav>
-    </main>
-  )
-}
-
-function ComingSoon({ what }: { what: string }) {
-  return (
-    <main className="page">
-      <h1>{what}</h1>
-      <p className="muted">다음 단계에서 만들 예정이에요.</p>
-      <Link className="btn" to="/">처음으로</Link>
     </main>
   )
 }
