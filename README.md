@@ -16,5 +16,21 @@
 - `frontend/` — React: 키오스크 화면, 설정 화면, 폰 주문 화면
 - `backend/` — FastAPI: 메뉴 API, AI 화면 변환 API, 주문 목업 API
 
+## 실행 방법 (개발용)
+터미널 2개를 열어 각각 실행합니다.
+
+```powershell
+# 1) 서버 (최초 1회: python -m venv backend\.venv ; backend\.venv\Scripts\pip install -r backend\requirements.txt)
+cd backend
+.venv\Scripts\python -m uvicorn app.main:app --host 0.0.0.0 --port 8010
+
+# 2) 화면 (최초 1회: npm install)
+cd frontend
+npm run dev
+```
+
+- PC: http://localhost:5180
+- 폰(같은 와이파이): http://<PC의 IP>:5180/m
+
 ## 상태
 🚧 개발 중 (2026-10-20 시작)
