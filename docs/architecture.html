@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>내 방식 QR 구조도</title>
+<style>
+  :root { --ink:#1d1b19; --muted:#6b6560; --line:#c9c1b8; --kiosk:#b45309; --phone:#1f4e79; --server:#166534; --ai:#7c3aed; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:#fff; font-family:'Malgun Gothic','Apple SD Gothic Neo',sans-serif; color:var(--ink); word-break:keep-all; }
+  #sheet { width:1400px; padding:36px 44px 44px; background:#fff; }
+  h1 { margin:0 0 4px; font-size:30px; }
+  .sub { color:var(--muted); margin:0 0 26px; font-size:15px; }
+  h2 { font-size:21px; margin:30px 0 12px; padding-left:10px; border-left:5px solid var(--phone); }
+  .note { color:var(--muted); font-size:14px; margin:6px 0 0; }
+  /* 구성도 */
+  .arch { display:grid; grid-template-columns:1fr 1fr 1.25fr 1fr; gap:46px; position:relative; }
+  .box { border:2.5px solid; border-radius:14px; padding:14px 16px; min-height:150px; position:relative; }
+  .box h3 { margin:0 0 6px; font-size:19px; }
+  .box .tech { font-size:13px; font-weight:700; margin-bottom:8px; }
+  .box ul { margin:0; padding-left:18px; font-size:14px; line-height:1.6; }
+  .k{border-color:var(--kiosk)} .k h3,.k .tech{color:var(--kiosk)}
+  .p{border-color:var(--phone)} .p h3,.p .tech{color:var(--phone)}
+  .s{border-color:var(--server);background:#f3faf5} .s h3,.s .tech{color:var(--server)}
+  .a{border-color:var(--ai)} .a h3,.a .tech{color:var(--ai)}
+  .link { position:absolute; top:50%; font-size:12px; color:var(--muted); text-align:center; width:46px; }
+  .rule { margin-top:14px; padding:10px 16px; background:#f7f5f2; border-radius:10px; font-size:15px; }
+  /* 표 */
+  table { width:100%; border-collapse:collapse; font-size:14px; }
+  th { background:#1f4e79; color:#fff; text-align:left; padding:8px 10px; }
+  td { border-bottom:1px solid #e3ddd6; padding:8px 10px; vertical-align:top; }
+  td code, .mono { font-family:Consolas,monospace; font-size:13px; }
+  .done { color:#166534; font-weight:700; } .todo { color:#b45309; font-weight:700; }
+  .tag { display:inline-block; min-width:22px; text-align:center; border-radius:6px; color:#fff; font-weight:700; font-size:12px; padding:1px 5px; }
+</style>
+</head>
+<body>
+<div id="sheet">
+  <h1>「내 방식 QR」 시스템 구조도</h1>
+  <p class="sub">2026 AI 라이프 솔루션 챌린지 · 아이디어 5번 · 2026.10.20 · 시제품 기준</p>
+
+  <h2>1. 시스템 구성도</h2>
+  <div class="arch">
+    <div class="box k"><h3>키오스크 (매장)</h3><div class="tech">React 웹 · /kiosk</div>
+      <ul><li>주문 창구 열기</li><li>QR 표시 (매장 + 창구번호)</li><li>주문번호 표시</li></ul></div>
+    <div class="box p"><h3>사용자 휴대폰</h3><div class="tech">React 웹 · /m · 앱 설치 없음</div>
+      <ul><li>접근성 설정 선택·<b>폰에만 저장</b></li><li>맞춤 화면 그리기 (화면 부품)</li><li>메뉴·옵션 선택, 주문</li></ul></div>
+    <div class="box s"><h3>우리 서버</h3><div class="tech">FastAPI (Python)</div>
+      <ul><li>메뉴 원본 보관 (<b>가격의 유일한 출처</b>)</li><li>변환 결과 저장본 관리</li><li>AI 결과 검사 6가지</li><li>가격 재계산 · 목업 결제 · 주문번호</li></ul></div>
+    <div class="box a"><h3>AI</h3><div class="tech">Claude API (형식 강제 출력)</div>
+      <ul><li>쉬운 설명·질문 문구</li><li>메뉴 묶음·순서</li><li>옵션 묻는 순서</li><li><b>가격은 받지도 정하지도 않음</b></li></ul></div>
+  </div>
+  <div class="rule"><b>원칙:</b> 키오스크는 QR만 띄우고, 폰은 화면만 그리고, AI는 설계도만 만들고, <b>판단(검사·가격·주문)은 전부 서버</b>가 한다. AI와 통신하는 것은 서버뿐이다 (API 키는 서버에만 보관).</div>
+
+  <h2>2. 시퀀스 다이어그램 (시간 순서)</h2>
+  <svg id="seq" width="1312" height="100"></svg>
+  <p class="note">실선 = 네트워크 요청 · 점선 = 응답 / 통신 아님 · 회색 상자 = 내부 처리. 저장본이 있으면 ⑨~⑪(AI 호출)을 건너뛴다.</p>
+
+  <h2>3. API 명세</h2>
+  <table>
+    <tr><th style="width:44px">단계</th><th style="width:250px">API</th><th style="width:90px">호출</th><th>요청</th><th>응답</th><th style="width:70px">상태</th></tr>
+    <tr><td><span class="tag" style="background:var(--kiosk)">A</span></td><td><code>POST /api/sessions</code></td><td>키오스크</td><td><code>{ store }</code></td><td><code>{ session: "K7F2" }</code> → QR 주소에 포함</td><td class="todo">10/21</td></tr>
+    <tr><td><span class="tag" style="background:var(--phone)">B</span></td><td><code>GET /api/menu?store=</code></td><td>휴대폰</td><td>매장 ID</td><td>원본 메뉴 (이름·가격·옵션·버전)</td><td class="done">완료</td></tr>
+    <tr><td><span class="tag" style="background:var(--ai)">C</span></td><td><code>POST /api/transform</code></td><td>휴대폰</td><td><code>{ store, profile: { fontSize, easyWords } }</code></td><td>검증된 맞춤 화면 데이터 (설계도 + 원본 가격)</td><td class="todo">10/21</td></tr>
+    <tr><td><span class="tag" style="background:var(--server)">D</span></td><td><code>POST /api/orders</code></td><td>휴대폰</td><td><code>{ session, items: [{ id, options, qty }] }</code> <b>금액 없음</b></td><td><code>{ orderNo, total }</code> (서버가 원본으로 계산)</td><td class="todo">10/21</td></tr>
+    <tr><td><span class="tag" style="background:var(--kiosk)">E</span></td><td><code>GET /api/sessions/{id}</code></td><td>키오스크</td><td>창구번호 (2초마다)</td><td><code>{ status, orderNo }</code></td><td class="todo">10/21</td></tr>
+    <tr><td>—</td><td><code>GET /api/health</code>, <code>/api/host</code></td><td>개발용</td><td>—</td><td>서버 상태 / PC 내부망 IP</td><td class="done">완료</td></tr>
+  </table>
+</div>
+
+<script>
+// 시퀀스 다이어그램을 데이터로 그린다.
+const X = { k: 120, p: 480, s: 860, a: 1200 };
+const NAMES = [['k','키오스크','#b45309'],['p','휴대폰','#1f4e79'],['s','우리 서버','#166534'],['a','AI (Claude)','#7c3aed']];
+// [phase, type, from, to, label]   type: req | res | dash | self
+const STEPS = [
+  ['A','req','k','s','① POST /api/sessions  (화면 켜짐: 창구 열기)'],
+  ['A','res','s','k','② { session: "K7F2" }'],
+  ['A','self','k',null,'③ QR 표시: …/m?store=dajeong-cafe&session=K7F2'],
+  ['B','dash','k','p','④ 폰 카메라로 QR 스캔 (네트워크 통신 아님)'],
+  ['B','self','p',null,'⑤ 설정 확인 — 없으면 설정 화면 → 폰에 저장'],
+  ['B','req','p','s','⑥ GET /api/menu?store=dajeong-cafe'],
+  ['B','res','s','p','⑦ 원본 메뉴'],
+  ['C','req','p','s','⑧ POST /api/transform  { store, profile }'],
+  ['C','self','s',null,'저장본 확인 (매장·메뉴버전·설정) → 있으면 ⑫로'],
+  ['C','req','s','a','⑨ 지침 + 설정 + 메뉴 (가격 제외)'],
+  ['C','res','a','s','⑩ 화면 설계도 JSON (쉬운 설명·순서·옵션 질문)'],
+  ['C','self','s',null,'⑪ 검사 6가지 → 실패 시 재요청/기본 화면 → 원본 가격 합침 → 저장'],
+  ['C','res','s','p','⑫ 검증된 맞춤 화면 데이터'],
+  ['C','self','p',null,'맞춤 화면 그리기 → 메뉴·옵션 선택'],
+  ['D','req','p','s','⑬ POST /api/orders  { session, items }  ※ 금액 없음'],
+  ['D','self','s',null,'⑭ 원본으로 가격 재계산 → 목업 결제 → 주문번호'],
+  ['D','res','s','p','⑮ { orderNo: 27, total: 5200 } → 폰 완료 화면'],
+  ['E','req','k','s','⑯ GET /api/sessions/K7F2  (2초마다 확인)'],
+  ['E','res','s','k','⑰ { status: "paid", orderNo: 27 } → "27번 주문 완료" 표시'],
+];
+const PH = { A:['#b45309','A 창구 열기·QR'], B:['#1f4e79','B 스캔·메뉴'], C:['#7c3aed','C AI 맞춤 화면'], D:['#166534','D 주문·결제'], E:['#b45309','E 완료 표시'] };
+const ROW = 40, TOP = 70;
+const svg = document.getElementById('seq');
+const H = TOP + STEPS.length * ROW + 30;
+svg.setAttribute('height', H);
+const ns = 'http://www.w3.org/2000/svg';
+const el = (t, a, txt) => { const e = document.createElementNS(ns, t); for (const k in a) e.setAttribute(k, a[k]); if (txt) e.textContent = txt; svg.appendChild(e); return e; };
+const defs = el('defs', {});
+for (const [id, c] of [['ah','#1d1b19'],['ahm','#6b6560']]) {
+  const m = document.createElementNS(ns,'marker');
+  Object.entries({id, markerWidth:10, markerHeight:10, refX:9, refY:5, orient:'auto'}).forEach(([k,v])=>m.setAttribute(k,v));
+  const p = document.createElementNS(ns,'path'); p.setAttribute('d','M0,0 L10,5 L0,10 z'); p.setAttribute('fill', c); m.appendChild(p); defs.appendChild(m);
+}
+// 단계 띠
+let start = 0;
+STEPS.forEach((s, i) => {
+  const last = i === STEPS.length - 1 || STEPS[i+1][0] !== s[0];
+  if (last) {
+    const y0 = TOP + start*ROW - 6, h = (i - start + 1)*ROW;
+    el('rect', { x:0, y:y0, width:1312, height:h, fill: i%2 ? '#faf8f5' : '#ffffff' });
+    el('rect', { x:0, y:y0, width:5, height:h, fill: PH[s[0]][0] });
+    el('text', { x:12, y:y0+18, 'font-size':12, 'font-weight':700, fill: PH[s[0]][0] }, PH[s[0]][1]);
+    start = i + 1;
+  }
+});
+// 생명선
+for (const [k, name, c] of NAMES) {
+  el('rect', { x:X[k]-80, y:8, width:160, height:40, rx:10, fill:c });
+  el('text', { x:X[k], y:34, 'text-anchor':'middle', 'font-size':17, 'font-weight':700, fill:'#fff' }, name);
+  el('line', { x1:X[k], y1:48, x2:X[k], y2:H-10, stroke:c, 'stroke-width':2, 'stroke-dasharray':'4 5', opacity:.55 });
+}
+// 메시지
+STEPS.forEach(([ph, type, f, t, label], i) => {
+  const y = TOP + i*ROW + 18;
+  if (type === 'self') {
+    const w = Math.min(560, label.length * 13 + 24);
+    let x = X[f] - w/2; x = Math.max(70, Math.min(x, 1300 - w));
+    el('rect', { x, y:y-15, width:w, height:26, rx:7, fill:'#eeeae5', stroke:'#c9c1b8' });
+    el('text', { x:x+w/2, y:y+3, 'text-anchor':'middle', 'font-size':13.5 }, label);
+    return;
+  }
+  const x1 = X[f], x2 = X[t], dir = Math.sign(x2 - x1);
+  el('line', { x1, y1:y, x2:x2 - dir*3, y2:y, stroke: type==='req' ? '#1d1b19' : '#6b6560', 'stroke-width': type==='req' ? 2 : 1.6,
+               'stroke-dasharray': type==='req' ? '' : '6 4', 'marker-end': type==='req' ? 'url(#ah)' : 'url(#ahm)' });
+  el('text', { x:(x1+x2)/2, y:y-7, 'text-anchor':'middle', 'font-size':13.5, 'font-family': 'Malgun Gothic',
+               'font-weight': type==='req' ? 700 : 400, fill:'#1d1b19' }, label);
+});
+</script>
+</body>
+</html>

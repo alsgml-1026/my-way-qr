@@ -12,6 +12,11 @@
 4. AI가 설정에 맞게 변환한 주문 화면이 열립니다.
 5. 메뉴·옵션 선택 → 장바구니 → 목업 결제로 주문을 마칩니다.
 
+## 시스템 구조
+![시스템 구조도](docs/architecture.png)
+
+> 원본: [`docs/architecture.html`](docs/architecture.html) — 수정 후 Chrome 으로 다시 캡처
+
 ## 구성 (예정)
 - `frontend/` — React: 키오스크 화면, 설정 화면, 폰 주문 화면
 - `backend/` — FastAPI: 메뉴 API, AI 화면 변환 API, 주문 목업 API
