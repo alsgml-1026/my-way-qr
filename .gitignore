@@ -1,0 +1,21 @@
+# 비밀 키 (절대 커밋 금지)
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Node
+node_modules/
+dist/
+
+# 기타
+.DS_Store
+Thumbs.db
+*.log
+.vscode/
+.idea/
