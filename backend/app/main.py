@@ -23,7 +23,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 
-load_dotenv(Path(__file__).resolve().parent.parent / ".env")
+load_dotenv(Path(__file__).resolve().parent.parent / ".env", override=True)
 
 # ───────────────── 매장 데이터 ─────────────────
 # data/stores/*.json 하나가 매장(키오스크) 하나. 파일만 추가하면 새 매장이 생긴다.
