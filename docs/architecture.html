@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="ko">
 <head>
 <meta charset="utf-8">
@@ -36,7 +36,7 @@
 <body>
 <div id="sheet">
   <h1>「내 방식 QR」 시스템 구조도</h1>
-  <p class="sub">2026 AI 라이프 솔루션 챌린지 · 아이디어 5번 · 2026.10.20 · 시제품 기준</p>
+  <p class="sub">2026 AI 라이프 솔루션 챌린지 · 아이디어 5번 · 2026.10.22 · 시제품 기준</p>
 
   <h2>1. 시스템 구성도</h2>
   <div class="arch">
@@ -45,8 +45,8 @@
     <div class="box p"><h3>사용자 휴대폰</h3><div class="tech">React 웹 · /m · 앱 설치 없음</div>
       <ul><li>접근성 설정 선택·<b>폰에만 저장</b></li><li>맞춤 화면 그리기 (화면 부품)</li><li>메뉴·옵션 선택, 주문</li></ul></div>
     <div class="box s"><h3>우리 서버</h3><div class="tech">FastAPI (Python)</div>
-      <ul><li>메뉴 원본 보관 (<b>가격의 유일한 출처</b>)</li><li>변환 결과 저장본 관리</li><li>AI 결과 검사 6가지</li><li>가격 재계산 · 목업 결제 · 주문번호</li></ul></div>
-    <div class="box a"><h3>AI</h3><div class="tech">Claude API (형식 강제 출력)</div>
+      <ul><li>메뉴 원본 보관 (<b>가격의 유일한 출처</b>)</li><li>변환 결과 저장본 관리</li><li>AI 결과 검사 8가지</li><li>가격 재계산 · 목업 결제 · 주문번호</li></ul></div>
+    <div class="box a"><h3>AI</h3><div class="tech">OpenAI gpt-4o-mini (형식 강제 출력)</div>
       <ul><li>쉬운 설명·질문 문구</li><li>메뉴 묶음·순서</li><li>옵션 묻는 순서</li><li><b>가격은 받지도 정하지도 않음</b></li></ul></div>
   </div>
   <div class="rule"><b>원칙:</b> 키오스크는 QR만 띄우고, 폰은 화면만 그리고, AI는 설계도만 만들고, <b>판단(검사·가격·주문)은 전부 서버</b>가 한다. AI와 통신하는 것은 서버뿐이다 (API 키는 서버에만 보관).</div>
@@ -58,11 +58,11 @@
   <h2>3. API 명세</h2>
   <table>
     <tr><th style="width:44px">단계</th><th style="width:250px">API</th><th style="width:90px">호출</th><th>요청</th><th>응답</th><th style="width:70px">상태</th></tr>
-    <tr><td><span class="tag" style="background:var(--kiosk)">A</span></td><td><code>POST /api/sessions</code></td><td>키오스크</td><td><code>{ store }</code></td><td><code>{ session: "K7F2" }</code> → QR 주소에 포함</td><td class="todo">10/21</td></tr>
+    <tr><td><span class="tag" style="background:var(--kiosk)">A</span></td><td><code>POST /api/sessions</code></td><td>키오스크</td><td><code>{ store }</code></td><td><code>{ session: "K7F2" }</code> → QR 주소에 포함</td><td class="done">완료</td></tr>
     <tr><td><span class="tag" style="background:var(--phone)">B</span></td><td><code>GET /api/menu?store=</code></td><td>휴대폰</td><td>매장 ID</td><td>원본 메뉴 (이름·가격·옵션·버전)</td><td class="done">완료</td></tr>
-    <tr><td><span class="tag" style="background:var(--ai)">C</span></td><td><code>POST /api/transform</code></td><td>휴대폰</td><td><code>{ store, profile: { fontSize, easyWords } }</code></td><td>검증된 맞춤 화면 데이터 (설계도 + 원본 가격)</td><td class="todo">10/21</td></tr>
-    <tr><td><span class="tag" style="background:var(--server)">D</span></td><td><code>POST /api/orders</code></td><td>휴대폰</td><td><code>{ session, items: [{ id, options, qty }] }</code> <b>금액 없음</b></td><td><code>{ orderNo, total }</code> (서버가 원본으로 계산)</td><td class="todo">10/21</td></tr>
-    <tr><td><span class="tag" style="background:var(--kiosk)">E</span></td><td><code>GET /api/sessions/{id}</code></td><td>키오스크</td><td>창구번호 (2초마다)</td><td><code>{ status, orderNo }</code></td><td class="todo">10/21</td></tr>
+    <tr><td><span class="tag" style="background:var(--ai)">C</span></td><td><code>POST /api/transform</code></td><td>휴대폰</td><td><code>{ store, profile: { fontSize, easyWords } }</code></td><td>검증된 맞춤 화면 데이터 (설계도 + 원본 가격)</td><td class="done">완료</td></tr>
+    <tr><td><span class="tag" style="background:var(--server)">D</span></td><td><code>POST /api/orders</code></td><td>휴대폰</td><td><code>{ session, items: [{ id, options, qty }] }</code> <b>금액 없음</b></td><td><code>{ orderNo, total }</code> (서버가 원본으로 계산)</td><td class="done">완료</td></tr>
+    <tr><td><span class="tag" style="background:var(--kiosk)">E</span></td><td><code>GET /api/sessions/{id}</code></td><td>키오스크</td><td>창구번호 (2초마다)</td><td><code>{ status, orderNo }</code></td><td class="done">완료</td></tr>
     <tr><td>—</td><td><code>GET /api/health</code>, <code>/api/host</code></td><td>개발용</td><td>—</td><td>서버 상태 / PC 내부망 IP</td><td class="done">완료</td></tr>
   </table>
 </div>
@@ -70,7 +70,7 @@
 <script>
 // 시퀀스 다이어그램을 데이터로 그린다.
 const X = { k: 120, p: 480, s: 860, a: 1200 };
-const NAMES = [['k','키오스크','#b45309'],['p','휴대폰','#1f4e79'],['s','우리 서버','#166534'],['a','AI (Claude)','#7c3aed']];
+const NAMES = [['k','키오스크','#b45309'],['p','휴대폰','#1f4e79'],['s','우리 서버','#166534'],['a','AI (GPT)','#7c3aed']];
 // [phase, type, from, to, label]   type: req | res | dash | self
 const STEPS = [
   ['A','req','k','s','① POST /api/sessions  (화면 켜짐: 창구 열기)'],
@@ -84,7 +84,7 @@ const STEPS = [
   ['C','self','s',null,'저장본 확인 (매장·메뉴버전·설정) → 있으면 ⑫로'],
   ['C','req','s','a','⑨ 지침 + 설정 + 메뉴 (가격 제외)'],
   ['C','res','a','s','⑩ 화면 설계도 JSON (쉬운 설명·순서·옵션 질문)'],
-  ['C','self','s',null,'⑪ 검사 6가지 → 실패 시 재요청/기본 화면 → 원본 가격 합침 → 저장'],
+  ['C','self','s',null,'⑪ 검사 8가지 → 실패 시 재요청/기본 화면 → 원본 가격 합침 → 저장'],
   ['C','res','s','p','⑫ 검증된 맞춤 화면 데이터'],
   ['C','self','p',null,'맞춤 화면 그리기 → 메뉴·옵션 선택'],
   ['D','req','p','s','⑬ POST /api/orders  { session, items }  ※ 금액 없음'],
