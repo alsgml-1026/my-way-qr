@@ -3,7 +3,7 @@
 흐름
   1) 원본 메뉴에서 가격을 뺀 정보만 AI 에 보낸다 (AI 는 가격을 모른다)
   2) AI 는 정해진 JSON 형식(설계도)으로만 답한다 (OpenAI Structured Outputs)
-  3) 서버가 검사 6개를 돌린다. 하나라도 틀리면 틀린 이유를 알려 주고 다시 시킨다 (최대 2번 더)
+  3) 서버가 검사 8개를 돌린다. 하나라도 틀리면 틀린 이유를 알려 주고 다시 시킨다 (최대 2번 더)
   4) 끝까지 실패하면 원본 메뉴 화면을 그대로 보여 준다 (주문은 항상 가능해야 함)
   5) 통과하면 원본 가격을 서버가 붙이고, 같은 매장·같은 설정이면 캐시에서 바로 준다
 
@@ -73,17 +73,19 @@ def menu_for_ai(store: dict) -> dict:
         "store": store["store"],
         "categories": store["categories"],
         "items": [{"id": i["id"], "name": i["name"], "category": i["category"], "desc": i["desc"],
+                   "must": [m["fact"] for m in i.get("must", [])],
                    "options": i["options"]} for i in store["items"]],
         "options": {k: {"name": v["name"], "choices": [{"id": c["id"], "name": c["name"]} for c in v["choices"]]}
                     for k, v in store["options"].items() if k in used},
     }
 
 
-# ───────────────── 검사 장치 (6개) ─────────────────
+# ───────────────── 검사 장치 (8개) ─────────────────
 PRICE_PATTERN = re.compile(r"\d[\d,]*\s*원|₩|\d{3,}")
+ENGLISH = re.compile(r"[A-Za-z]")
 
 
-def validate(store: dict, plan: dict | None, font_size: str) -> list[dict]:
+def validate(store: dict, plan: dict | None, font_size: str, easy_words: bool = True) -> list[dict]:
     checks = []
 
     def add(name, ok, detail=""):
@@ -136,6 +138,24 @@ def validate(store: dict, plan: dict | None, font_size: str) -> list[dict]:
     if long_q:
         detail.append(f"질문이 {R.QUESTION_MAX}자보다 길어요: {', '.join(long_q)}")
     add("글씨 크기별 길이", not detail, " / ".join(detail))
+
+    # 7. '쉬운 말' 설정이면 어려운 말·영어가 없는가 (설정을 껐으면 통과)
+    hard = []
+    if easy_words:
+        for t in texts:
+            words = [w for w in R.HARD_WORDS if w in t]
+            if words or ENGLISH.search(t):
+                hard.append(f"'{t}' → {', '.join(words) or '영어'}")
+    add("어려운 말 없음", not hard, f"어려운 말이 남았어요: {hard[:4]}" if hard else "")
+
+    # 8. 메뉴마다 꼭 남길 정보(must)가 설명에 들어 있는가
+    desc_by_id = {it.get("id"): it.get("desc", "") for it in plan["items"]}
+    lost = []
+    for item in store["items"]:
+        for m in item.get("must", []):
+            if not any(k in desc_by_id.get(item["id"], "") for k in m["any"]):
+                lost.append(f"{item['name']}: '{m['fact']}'")
+    add("꼭 남길 정보 포함", not lost, f"빠진 정보: {', '.join(lost)}" if lost else "")
     return checks
 
 
@@ -231,7 +251,7 @@ def transform(store: dict, font_size: str, easy_words: bool, fresh: bool = False
             except Exception as e:  # 네트워크·키 오류 등 → 원본 화면으로
                 error = f"AI 호출 실패: {type(e).__name__}: {e}"[:300]
                 break
-            checks = validate(store, plan, font_size)
+            checks = validate(store, plan, font_size, easy_words)
             failed = [c for c in checks if not c["ok"]]
             if not failed:
                 plan_ok = plan
@@ -252,3 +272,14 @@ def transform(store: dict, font_size: str, easy_words: bool, fresh: bool = False
         with _cache_lock:
             _cache[key] = result
     return result
+
+
+def warm_cache(stores: list[dict]) -> None:
+    """서버가 켜질 때 매장마다 설정 6가지 화면을 미리 만들어 둔다 → 첫 손님도 기다리지 않음."""
+    if not os.getenv("OPENAI_API_KEY"):
+        return
+    for store in stores:
+        for font in R.DESC_MAX:
+            for easy in (True, False):
+                r = transform(store, font, easy)
+                print(f"[미리 만들기] {store['store']} 글씨={font} 쉬운말={easy} → {r['source']} ({r['elapsedMs']}ms)", flush=True)

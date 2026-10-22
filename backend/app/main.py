@@ -13,6 +13,7 @@ API (docs/architecture.png 의 단계 기호와 같음)
 -    GET  /api/health, /api/host 개발용
 """
 import json
+import os
 import secrets
 import socket
 import threading
@@ -23,7 +24,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 
-from .transform import transform as ai_transform
+from .transform import transform as ai_transform, warm_cache
 
 load_dotenv(Path(__file__).resolve().parent.parent / ".env", override=True)
 
@@ -45,6 +46,13 @@ def get_store(store_id: str) -> dict:
 
 
 app = FastAPI(title="내 방식 QR API", version="0.2.0")
+
+
+# 서버가 켜지면 뒤에서 AI 화면을 미리 만들어 둔다 (끄려면 .env 에 WARM_CACHE=0)
+@app.on_event("startup")
+def _warm():
+    if os.getenv("WARM_CACHE", "1") != "0":
+        threading.Thread(target=warm_cache, args=(list(STORES.values()),), daemon=True).start()
 
 
 @app.get("/api/health")
