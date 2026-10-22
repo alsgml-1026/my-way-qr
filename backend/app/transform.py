@@ -130,7 +130,8 @@ def validate(store: dict, plan: dict | None, font_size: str, easy_words: bool = 
 
     # 6. 글씨 크기에 맞는 길이인가
     dmax = R.DESC_MAX[font_size]
-    long_desc = [f"{it.get('id')}({len(it.get('desc', ''))}자)" for it in plan["items"] if len(it.get("desc", "")) > dmax]
+    long_desc = [f"{it.get('id')} '{it.get('desc', '')}'({len(it.get('desc', ''))}자 → {dmax - R.LENGTH_MARGIN}자 이하로)"
+                 for it in plan["items"] if len(it.get("desc", "")) > dmax]
     long_q = [f"{o.get('key')}({len(o.get('question', ''))}자)" for o in plan["options"] if len(o.get("question", "")) > R.QUESTION_MAX]
     detail = []
     if long_desc:
@@ -171,13 +172,19 @@ def _openai():
     return _client
 
 
-def ask_ai(store: dict, font_size: str, easy_words: bool, feedback: str | None) -> dict | None:
+def ask_ai(store: dict, font_size: str, easy_words: bool,
+           previous: dict | None = None, feedback: str | None = None) -> dict | None:
     messages = [
         {"role": "system", "content": R.build_system_prompt(font_size, easy_words)},
         {"role": "user", "content": "아래 메뉴를 바꿔 줘.\n" + json.dumps(menu_for_ai(store), ensure_ascii=False)},
     ]
     if feedback:
-        messages.append({"role": "user", "content": "방금 답에 문제가 있었어. 고쳐서 다시 답해 줘:\n" + feedback})
+        # 다시 시킬 때는 AI 가 방금 쓴 답을 보여 주고, 틀린 곳만 고치게 한다
+        if previous is not None:
+            messages.append({"role": "assistant", "content": json.dumps(previous, ensure_ascii=False)})
+        messages.append({"role": "user", "content": (
+            "방금 답에 문제가 있었어. 아래 문제만 고치고 나머지는 그대로 두고 다시 답해 줘.\n"
+            "설명이 길다는 문제는 꾸밈말을 빼고 핵심 재료와 꼭 남길 정보만 남겨서 확실히 줄여.\n" + feedback)})
     res = _openai().chat.completions.create(
         model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
         messages=messages,
@@ -241,13 +248,13 @@ def transform(store: dict, font_size: str, easy_words: bool, fresh: bool = False
 
     started = time.time()
     attempts, checks, feedback, error = 0, [], None, None
-    plan_ok = None
+    plan = plan_ok = None
     if not os.getenv("OPENAI_API_KEY"):
         error = "OPENAI_API_KEY 가 없어요 (backend/.env)"
     else:
         for attempts in range(1, MAX_RETRY + 2):
             try:
-                plan = ask_ai(store, font_size, easy_words, feedback)
+                plan = ask_ai(store, font_size, easy_words, previous=plan, feedback=feedback)
             except Exception as e:  # 네트워크·키 오류 등 → 원본 화면으로
                 error = f"AI 호출 실패: {type(e).__name__}: {e}"[:300]
                 break
