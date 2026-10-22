@@ -136,3 +136,9 @@ button { font: inherit; color: inherit; }
 .kiosk-done-no small { font-size: 36px; margin-left: 6px; }
 .kiosk-done-total { font-size: 20px; font-weight: 700; margin-bottom: 12px; }
 .kiosk .error { color: #ffb4a8; }
+
+/* ───── AI 변환 상태 표시 ───── */
+.ai-badge { margin: 8px 0 0; padding: 8px 12px; border-radius: 10px; font-size: 0.8em; font-weight: 700; border: 2px solid var(--line); background: var(--surface); }
+.ai-badge.done { border-color: var(--accent); color: var(--accent); }
+.ai-badge.loading { color: var(--muted); }
+.item-orig { font-size: 0.75em; color: var(--muted); text-decoration: line-through; }

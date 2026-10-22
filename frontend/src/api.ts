@@ -64,3 +64,36 @@ export const fetchHost = () => call<{ ip: string }>('/api/host')
 export function won(n: number): string {
   return n.toLocaleString('ko-KR') + '원'
 }
+
+// ───── C. AI 맞춤 화면 ─────
+export interface ScreenItem {
+  id: string
+  name: string
+  price: number
+  desc: string // AI 가 바꾼 설명 (원본 화면이면 원래 설명)
+  originalDesc: string
+  options: string[] // 질문 순서대로 정렬됨
+}
+
+export interface ScreenOption {
+  name: string
+  question: string
+  choices: { id: string; name: string; label: string; price: number }[]
+}
+
+export interface Screen {
+  store: string
+  storeId: string
+  groups: { title: string; items: ScreenItem[] }[]
+  options: Record<string, ScreenOption>
+  source: 'ai' | 'cache' | 'original' // original = AI 실패로 원본 화면
+  rulesVersion: string
+  attempts: number
+  checks: { name: string; ok: boolean; detail: string }[]
+  error: string | null
+  elapsedMs: number
+}
+
+/** C. 원본 메뉴 + 내 설정 → AI 맞춤 화면 (가격은 서버가 원본으로 붙여 줌) */
+export const transformMenu = (store: string, profile: { fontSize: string; easyWords: boolean }) =>
+  call<Screen>('/api/transform', json({ store, profile: { fontSize: profile.fontSize, easyWords: profile.easyWords } }))

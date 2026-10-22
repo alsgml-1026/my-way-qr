@@ -7,7 +7,7 @@
 API (docs/architecture.png 의 단계 기호와 같음)
 - A  POST /api/sessions          키오스크가 주문 창구를 연다 → 창구번호(QR 에 넣음)
 - B  GET  /api/menu?store=       매장 원본 메뉴 (가격의 유일한 출처)
-- C  POST /api/transform         AI 맞춤 화면 (10/21 예정)
+- C  POST /api/transform         AI 맞춤 화면 (원본 메뉴 + 내 설정 → 검사 통과한 설계도 + 원본 가격)
 - D  POST /api/orders            주문 → 서버가 원본으로 금액 재계산 → 목업 결제 → 주문번호
 - E  GET  /api/sessions/{id}     키오스크가 2초마다 주문 완료 여부 확인
 -    GET  /api/health, /api/host 개발용
@@ -22,6 +22,8 @@ from pathlib import Path
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
+
+from .transform import transform as ai_transform
 
 load_dotenv(Path(__file__).resolve().parent.parent / ".env", override=True)
 
@@ -54,6 +56,25 @@ def health():
 @app.get("/api/menu")
 def get_menu(store: str = DEFAULT_STORE):
     return get_store(store)
+
+
+# ───────────────── C. AI 화면 변환 ─────────────────
+class TransformProfile(BaseModel):
+    fontSize: str = "large"  # normal | large | xlarge
+    easyWords: bool = True
+    # bigButtons·highContrast 는 화면(CSS)만 바꾸므로 AI 에 보내지 않는다
+
+
+class TransformRequest(BaseModel):
+    store: str = DEFAULT_STORE
+    profile: TransformProfile = Field(default_factory=TransformProfile)
+    fresh: bool = False  # True 면 캐시 무시 (성공률 측정용)
+
+
+@app.post("/api/transform")
+def transform_screen(body: TransformRequest):
+    store = get_store(body.store)
+    return ai_transform(store, body.profile.fontSize, body.profile.easyWords, fresh=body.fresh)
 
 
 # ───────────────── A·E. 주문 창구(세션) ─────────────────
