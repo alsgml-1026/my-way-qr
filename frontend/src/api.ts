@@ -8,6 +8,7 @@ export interface MenuItem {
   price: number
   desc: string
   options: string[]
+  must?: { fact: string; any: string[] }[] // 꼭 남길 정보 (AI 설명에서 빠지면 검사 실패)
 }
 
 export interface Menu {
@@ -95,5 +96,5 @@ export interface Screen {
 }
 
 /** C. 원본 메뉴 + 내 설정 → AI 맞춤 화면 (가격은 서버가 원본으로 붙여 줌) */
-export const transformMenu = (store: string, profile: { fontSize: string; easyWords: boolean }) =>
-  call<Screen>('/api/transform', json({ store, profile: { fontSize: profile.fontSize, easyWords: profile.easyWords } }))
+export const transformMenu = (store: string, profile: { fontSize: string; easyWords: boolean }, fresh = false) =>
+  call<Screen>('/api/transform', json({ store, profile: { fontSize: profile.fontSize, easyWords: profile.easyWords }, fresh }))

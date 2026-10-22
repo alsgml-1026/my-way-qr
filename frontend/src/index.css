@@ -142,3 +142,28 @@ button { font: inherit; color: inherit; }
 .ai-badge.done { border-color: var(--accent); color: var(--accent); }
 .ai-badge.loading { color: var(--muted); }
 .item-orig { font-size: 0.75em; color: var(--muted); text-decoration: line-through; }
+
+/* ───── AI 변환 확인 (/lab, PC용) ───── */
+.lab { max-width: 1200px; margin: 0 auto; padding: 24px; font-size: 15px; background: #fff; min-height: 100vh; color: #1d1b19; }
+.lab h1 { font-size: 24px; margin: 0; }
+.lab h2 { font-size: 17px; margin: 28px 0 8px; }
+.lab-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 16px; }
+.lab-controls { display: flex; flex-wrap: wrap; gap: 8px; }
+.lab-chip { padding: 8px 14px; border-radius: 999px; border: 2px solid #ddd6cf; background: #fff; font-weight: 700; cursor: pointer; }
+.lab-chip.on { border-color: #1f4e79; background: #e3edf7; color: #1f4e79; }
+.lab-run { padding: 8px 16px; border-radius: 10px; border: 0; background: #1f4e79; color: #fff; font-weight: 700; cursor: pointer; }
+.lab-run:disabled { opacity: 0.6; cursor: wait; }
+.lab-meta { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; padding: 10px 14px; background: #f7f5f2; border-radius: 10px; font-weight: 700; }
+.lab-badge { padding: 4px 10px; border-radius: 999px; color: #fff; background: #1f4e79; }
+.lab-badge.cache { background: #2e7d32; }
+.lab-badge.original { background: #b42318; }
+.lab-checks { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 12px 0 16px; }
+.lab-check { padding: 8px 10px; border-radius: 8px; font-weight: 700; display: flex; flex-direction: column; }
+.lab-check.ok { background: #e8f5e9; color: #1b5e20; }
+.lab-check.bad { background: #fdecea; color: #b42318; }
+.lab-check small { font-weight: 400; font-size: 12px; }
+.lab-table { width: 100%; border-collapse: collapse; }
+.lab-table th, .lab-table td { border: 1px solid #e5e0da; padding: 8px 10px; text-align: left; vertical-align: top; }
+.lab-table th { background: #f1ede8; font-size: 13px; }
+.lab-group { font-weight: 800; background: #faf8f5; white-space: nowrap; }
+@media (max-width: 760px) { .lab-checks { grid-template-columns: repeat(2, 1fr); } }
