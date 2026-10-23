@@ -12,7 +12,9 @@ const POLL_MS = 2000
 const DONE_SHOW_MS = 10000
 
 export default function KioskPage() {
-  const store = new URLSearchParams(location.search).get('store') || DEFAULT_STORE
+  const params = new URLSearchParams(location.search)
+  const store = params.get('store') || DEFAULT_STORE
+  const debug = params.has('debug')
   const [menu, setMenu] = useState<Menu | null>(null)
   const [base, setBase] = useState<string | null>(null) // QR 에 넣을 주소의 앞부분
   const [session, setSession] = useState<string | null>(null)
@@ -116,7 +118,8 @@ export default function KioskPage() {
               <li>쉬운 설명</li>
               <li>내 휴대폰으로 천천히</li>
             </ul>
-            {qrUrl && <code className="kiosk-qr-url">{qrUrl}</code>}
+            {/* QR 주소(내부 IP 포함)는 영상·사진에 찍히지 않게 /kiosk?debug 일 때만 보여 준다 */}
+            {qrUrl && debug && <code className="kiosk-qr-url">{qrUrl}</code>}
             {session && <div className="kiosk-session">창구 {session}</div>}
           </>
         )}

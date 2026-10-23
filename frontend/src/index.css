@@ -98,6 +98,28 @@ button { font: inherit; color: inherit; }
   justify-content: center; padding: 16px; background: var(--accent); color: var(--accent-text); font-weight: 700;
 }
 .bottom-bar .muted { color: inherit; opacity: 0.85; font-weight: 400; }
+a.bottom-bar { min-height: var(--tap); align-items: center; justify-content: space-between; text-decoration: none; }
+
+/* ───── 옵션 → 주문 목록 → 완료 ───── */
+.btn.back { margin-bottom: 0.8em; }
+.btn:disabled { opacity: 0.6; cursor: wait; }
+.option-head h1 { margin-bottom: 0.1em; }
+.step { font-weight: 700; }
+.question { font-size: 1.3em; margin: 0.6em 0 0.8em; }
+.choice-card { flex-direction: row; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+.choice-card .item-name { font-size: 1.2em; }
+.qty-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.qty-btn { min-width: var(--tap); font-size: 1.3em; padding: 0; }
+.qty-num { min-width: 3em; text-align: center; font-weight: 800; font-size: 1.2em; }
+.small-row { margin: 6px 0; gap: 8px; }
+.small-row .qty-num { font-size: 1em; }
+.summary { margin: 1em 0 0; padding-left: 1.2em; }
+.total-line { font-size: 1.3em; font-weight: 800; margin: 0.8em 0 0; }
+.pay-box { margin-top: 1em; }
+.done { text-align: center; padding-top: 48px; }
+.done-label { font-size: 1.2em; font-weight: 700; }
+.done-no { font-size: 4.5em; font-weight: 900; line-height: 1.1; margin: 0.1em 0; color: var(--accent); }
+.done-no small { font-size: 0.4em; margin-left: 4px; }
 
 /* ───── 개발용 첫 화면 ───── */
 .dev-home { padding-top: 40px; }

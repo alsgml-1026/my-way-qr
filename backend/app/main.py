@@ -22,6 +22,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
 from .transform import transform as ai_transform, warm_cache
@@ -82,7 +83,9 @@ class TransformRequest(BaseModel):
 @app.post("/api/transform")
 def transform_screen(body: TransformRequest):
     store = get_store(body.store)
-    return ai_transform(store, body.profile.fontSize, body.profile.easyWords, fresh=body.fresh)
+    # 공개 배포에서는 ALLOW_FRESH=0 → 누구나 캐시를 건너뛰어 AI 비용을 쓰게 하지 않는다
+    fresh = body.fresh and os.getenv("ALLOW_FRESH", "1") != "0"
+    return ai_transform(store, body.profile.fontSize, body.profile.easyWords, fresh=fresh)
 
 
 # ───────────────── A·E. 주문 창구(세션) ─────────────────
@@ -203,3 +206,18 @@ def lan_ip() -> str:
 @app.get("/api/host")
 def get_host():
     return {"ip": lan_ip()}
+
+
+# ───────────────── 배포용: 화면(frontend/dist)도 이 서버가 내보낸다 ─────────────────
+# 개발 때는 dist 가 없으므로 건너뛴다 (화면은 vite 5180 이 맡음).
+# 배포에서는 주소 하나로 화면·API 를 모두 쓴다 → 창구·주문번호가 서버 한 대 메모리에 있어 그대로 동작
+DIST_DIR = Path(__file__).resolve().parent.parent.parent / "frontend" / "dist"
+if DIST_DIR.is_dir():
+    @app.get("/{path:path}", include_in_schema=False)
+    def spa(path: str):
+        if path.startswith("api/"):
+            raise HTTPException(404, "없는 주소예요")
+        f = (DIST_DIR / path).resolve()
+        if path and f.is_file() and DIST_DIR in f.parents:
+            return FileResponse(f)
+        return FileResponse(DIST_DIR / "index.html")  # /kiosk, /m/cart 같은 화면 주소
