@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { ALLERGEN_CHOICES, HEALTH_NOTE, WATCH_CHOICES } from '../health'
 import { DEFAULT_PROFILE, loadProfile, profileAttrs, saveProfile, type FontSize, type Profile } from '../profile'
 
 // 접근성 설정 화면 — 처음 한 번 고르면 폰에 저장된다.
@@ -8,6 +9,12 @@ export default function SetupPage() {
   const navigate = useNavigate()
   const [p, setP] = useState<Profile>(() => loadProfile() ?? DEFAULT_PROFILE)
   const set = <K extends keyof Profile>(k: K, v: Profile[K]) => setP((prev) => ({ ...prev, [k]: v }))
+  // 여러 개 고르는 항목: 누를 때마다 넣었다 뺐다 (빠르게 연달아 눌러도 앞의 선택이 사라지지 않게 prev 기준)
+  const flip = <K extends 'watch' | 'allergies'>(k: K, v: Profile[K][number]) =>
+    setP((prev) => {
+      const list = prev[k] as string[]
+      return { ...prev, [k]: list.includes(v) ? list.filter((x) => x !== v) : [...list, v] }
+    })
 
   const start = () => {
     saveProfile(p)
@@ -40,6 +47,42 @@ export default function SetupPage() {
         <Toggle label="버튼을 크게" hint="손가락으로 누르기 쉬워요" value={p.bigButtons} onChange={(v) => set('bigButtons', v)} />
         <Toggle label="쉬운 말로 설명" hint="어려운 메뉴 설명을 쉽게 바꿔 드려요" value={p.easyWords} onChange={(v) => set('easyWords', v)} />
         <Toggle label="진한 색 (고대비)" hint="검은 바탕에 밝은 글씨로 또렷하게" value={p.highContrast} onChange={(v) => set('highContrast', v)} />
+
+        {/* 건강 맞춤 표시 — 고른 내용은 이 폰에만 저장되고 서버로 보내지 않는다 */}
+        <section className="setting">
+          <h2>조심하는 것 (고르지 않아도 돼요)</h2>
+          <p className="muted small-hint">고르면 메뉴에 표시해 드려요. 이 정보는 이 폰에만 저장돼요.</p>
+          <div className="chip-row" role="group" aria-label="조심할 성분">
+            {WATCH_CHOICES.map((w) => (
+              <button
+                key={w.id}
+                role="checkbox"
+                aria-checked={p.watch.includes(w.id)}
+                className={'choice' + (p.watch.includes(w.id) ? ' selected' : '')}
+                onClick={() => flip('watch', w.id)}
+              >
+                {w.label}
+              </button>
+            ))}
+          </div>
+          <h2>알레르기</h2>
+          <div className="chip-row" role="group" aria-label="알레르기">
+            {ALLERGEN_CHOICES.map((a) => (
+              <button
+                key={a.id}
+                role="checkbox"
+                aria-checked={p.allergies.includes(a.id)}
+                className={'choice' + (p.allergies.includes(a.id) ? ' selected' : '')}
+                onClick={() => flip('allergies', a.id)}
+              >
+                {a.label}
+              </button>
+            ))}
+          </div>
+          <p className="muted small-hint">{HEALTH_NOTE}</p>
+        </section>
+
+        <Toggle label="칼로리 보기" hint="메뉴마다 칼로리를 보여 드려요" value={p.showKcal} onChange={(v) => set('showKcal', v)} />
 
         <section className="preview" aria-label="미리 보기">
           <p className="muted">미리 보기</p>

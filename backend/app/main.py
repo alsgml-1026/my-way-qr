@@ -29,6 +29,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
+from .health import check_store, item_health
 from .transform import transform as ai_transform, warm_cache
 
 load_dotenv(Path(__file__).resolve().parent.parent / ".env", override=True)
@@ -39,6 +40,7 @@ STORES_DIR = Path(__file__).resolve().parent / "data" / "stores"
 STORES: dict[str, dict] = {}
 for f in sorted(STORES_DIR.glob("*.json")):
     data = json.loads(f.read_text(encoding="utf-8"))
+    check_store(data)
     STORES[data["id"]] = data
 DEFAULT_STORE = "modui-cafe"
 
@@ -68,7 +70,9 @@ def health():
 # ───────────────── B. 메뉴 ─────────────────
 @app.get("/api/menu")
 def get_menu(store: str = DEFAULT_STORE):
-    return get_store(store)
+    s = get_store(store)
+    # 건강 표시용 태그는 서버가 붙인다 (기준값은 health.py)
+    return {**s, "items": [{**i, "health": item_health(i)} for i in s["items"]]}
 
 
 # ───────────────── C. AI 화면 변환 ─────────────────
