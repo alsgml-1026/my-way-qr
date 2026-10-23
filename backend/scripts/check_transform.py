@@ -5,6 +5,7 @@ r"""AI 변환 성공률 측정 — 보고서의 '변환 성공률' 숫자를 만
   backend\.venv\Scripts\python backend\scripts\check_transform.py 5        # 설정 6가지 × 5번 = 30번
   backend\.venv\Scripts\python backend\scripts\check_transform.py 1 show   # 결과 화면 내용도 출력
   backend\.venv\Scripts\python backend\scripts\check_transform.py 5 save   # 결과를 docs/samples 에 저장
+  backend\.venv\Scripts\python backend\scripts\check_transform.py 5 store=modui-bunsik   # 다른 매장 (기본: modui-cafe)
       → docs/samples/측정기록.csv  (한 번 돌릴 때마다 줄이 쌓임: 날짜·규칙·설정·성공·시도·시간·틀린 검사)
       → docs/samples/AI_변환_샘플.md (설정별 원래 설명 vs AI 설명 — 제출물 '샘플 결과물')
 
@@ -32,7 +33,8 @@ from app.transform import transform  # noqa: E402
 repeat = int(sys.argv[1]) if len(sys.argv) > 1 and sys.argv[1].isdigit() else 1
 show = "show" in sys.argv
 save = "save" in sys.argv
-store = json.loads((ROOT / "app" / "data" / "stores" / "modui-cafe.json").read_text(encoding="utf-8"))
+store_id = next((a.split("=", 1)[1] for a in sys.argv if a.startswith("store=")), "modui-cafe")
+store = json.loads((ROOT / "app" / "data" / "stores" / f"{store_id}.json").read_text(encoding="utf-8"))
 FONT_KO = {"normal": "보통 글씨", "large": "큰 글씨", "xlarge": "아주 큰 글씨"}
 
 combos = [(f, e) for f in ("normal", "large", "xlarge") for e in (True, False)]
@@ -86,7 +88,8 @@ if save:
 
     log = out / "측정기록.csv"
     new = not log.exists()
-    with log.open("a", newline="", encoding="utf-8-sig") as f:  # utf-8-sig: 엑셀에서 한글 안 깨짐
+    # utf-8-sig(엑셀에서 한글 안 깨짐)는 새 파일일 때만 — 이어 쓸 때 쓰면 중간에 BOM 글자가 끼어든다
+    with log.open("a", newline="", encoding="utf-8-sig" if new else "utf-8") as f:
         w = csv.writer(f)
         if new:
             w.writerow(["측정 시각", "규칙", "매장", "글씨", "쉬운 말", "결과", "시도 횟수", "걸린 시간(ms)", "틀린 검사", "오류"])
@@ -107,5 +110,7 @@ if save:
         for o in r["options"].values():
             md.append(f"| {o['name']} | {o['question']} | " + " / ".join(f"{c['name']} → {c['label']}" for c in o["choices"]) + " |")
         md.append("")
-    (out / "AI_변환_샘플.md").write_text("\n".join(md), encoding="utf-8")
-    print(f"\n저장: {log}\n저장: {out / 'AI_변환_샘플.md'}")
+    # 매장마다 샘플 파일을 따로 둔다 (카페 샘플을 덮어쓰지 않게)
+    sample = out / ("AI_변환_샘플.md" if store_id == "modui-cafe" else f"AI_변환_샘플_{store_id}.md")
+    sample.write_text("\n".join(md), encoding="utf-8")
+    print(f"\n저장: {log}\n저장: {sample}")
