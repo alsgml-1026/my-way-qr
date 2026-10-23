@@ -129,15 +129,16 @@ a.bottom-bar { min-height: var(--tap); align-items: center; justify-content: spa
 /* ───── 모의 키오스크 (/kiosk) ─────
    왼쪽은 일부러 흔한 키오스크처럼 글씨가 작고 빽빽하게 (비교 대상) */
 .kiosk { display: grid; grid-template-columns: 1fr 380px; min-height: 100vh; background: #2b2b2b; font-size: 13px; }
-.kiosk-menu { background: #fff; color: #222; display: flex; flex-direction: column; }
+.kiosk-menu { background: #fff; color: #222; display: flex; flex-direction: column; position: relative; }
 .kiosk-top { display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; background: #c8102e; color: #fff; }
 .kiosk-top strong { font-size: 16px; }
 .kiosk-top span { font-size: 11px; opacity: 0.9; }
 .kiosk-tabs { display: flex; gap: 4px; padding: 6px 10px; background: #f1f1f1; border-bottom: 1px solid #ddd; }
-.kiosk-tabs span { padding: 4px 10px; border-radius: 3px; font-size: 11px; color: #555; }
-.kiosk-tabs span.on { background: #c8102e; color: #fff; }
+.kiosk-tabs button { padding: 4px 10px; border: 0; border-radius: 3px; background: none; font: inherit; font-size: 11px; color: #555; cursor: pointer; }
+.kiosk-tabs button.on { background: #c8102e; color: #fff; }
 .kiosk-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 10px; }
-.kiosk-item { border: 1px solid #e3e3e3; border-radius: 4px; padding: 6px; text-align: center; }
+.kiosk-item { border: 1px solid #e3e3e3; border-radius: 4px; padding: 6px; text-align: center; background: #fff; font: inherit; color: inherit; cursor: pointer; }
+.kiosk-item:active { background: #fbeff1; }
 .kiosk-thumb { height: 64px; border-radius: 3px; background: linear-gradient(135deg, #efe6dc, #d9c7b4); margin-bottom: 4px; }
 .kiosk-name { font-size: 12px; font-weight: 700; }
 .kiosk-desc { font-size: 9px; color: #999; }
@@ -189,3 +190,39 @@ a.bottom-bar { min-height: var(--tap); align-items: center; justify-content: spa
 .lab-table th { background: #f1ede8; font-size: 13px; }
 .lab-group { font-weight: 800; background: #faf8f5; white-space: nowrap; }
 @media (max-width: 760px) { .lab-checks { grid-template-columns: repeat(2, 1fr); } }
+
+/* 기존 키오스크 화면 주문 (사용자 테스트 '기존 방식' 비교용) — 일부러 흔한 키오스크처럼 작게 */
+.kiosk-cart { margin-top: auto; display: flex; gap: 8px; padding: 8px 10px; border-top: 2px solid #c8102e; background: #fafafa; font-size: 11px; }
+.kiosk-cart-lines { flex: 1; max-height: 84px; overflow-y: auto; }
+.kiosk-cart-empty { color: #999; }
+.kiosk-cart-line { display: flex; justify-content: space-between; gap: 6px; padding: 2px 0; border-bottom: 1px dotted #ddd; }
+.kiosk-cart-line button { font-size: 10px; padding: 0 6px; border: 1px solid #ccc; background: #fff; border-radius: 2px; cursor: pointer; }
+.kiosk-cart-pay { display: flex; flex-direction: column; align-items: flex-end; justify-content: space-between; gap: 6px; }
+.kiosk-cart-pay span { font-weight: 700; color: #c8102e; font-size: 13px; }
+.kiosk-cart-pay button { padding: 8px 16px; border: 0; border-radius: 3px; background: #c8102e; color: #fff; font-weight: 700; font-size: 12px; cursor: pointer; }
+.kiosk-cart-pay button:disabled { background: #ccc; cursor: default; }
+.kiosk-modal { position: absolute; inset: 0; background: rgba(0, 0, 0, 0.45); display: grid; place-items: center; }
+.kiosk-modal-box { width: min(420px, 90%); background: #fff; border-radius: 4px; padding: 12px; font-size: 11px; }
+.kiosk-modal-head { display: flex; justify-content: space-between; font-size: 14px; padding-bottom: 6px; border-bottom: 1px solid #eee; margin-bottom: 6px; }
+.kiosk-modal-head span { color: #c8102e; font-weight: 700; }
+.kiosk-opt { display: flex; align-items: center; gap: 8px; padding: 4px 0; }
+.kiosk-opt-name { width: 52px; color: #666; }
+.kiosk-opt-choices { display: flex; gap: 4px; align-items: center; }
+.kiosk-opt-choices button { min-width: 44px; padding: 4px 6px; border: 1px solid #ccc; border-radius: 2px; background: #fff; font-size: 11px; cursor: pointer; }
+.kiosk-opt-choices button.on { border-color: #c8102e; color: #c8102e; font-weight: 700; }
+.kiosk-opt-choices small { font-size: 9px; color: #999; }
+.kiosk-qty { min-width: 20px; text-align: center; }
+.kiosk-modal-btns { display: flex; gap: 6px; justify-content: flex-end; margin-top: 8px; }
+.kiosk-modal-btns button { padding: 6px 14px; border: 1px solid #ccc; border-radius: 2px; background: #fff; font-size: 11px; cursor: pointer; }
+.kiosk-modal-btns button.primary { background: #c8102e; border-color: #c8102e; color: #fff; font-weight: 700; }
+
+/* 사용자 테스트 진행자 칸 (/kiosk?test) */
+.test-panel { width: 100%; background: rgba(0, 0, 0, 0.25); border-radius: 8px; padding: 10px; font-size: 13px; text-align: left; }
+.test-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.test-row input { width: 70px; padding: 4px 6px; font-size: 14px; }
+.test-row button { padding: 6px 12px; font-size: 14px; font-weight: 700; border: 0; border-radius: 4px; background: #ffd400; color: #222; cursor: pointer; }
+.test-row button:disabled { opacity: 0.5; cursor: default; }
+.test-clock { font-size: 22px; font-weight: 800; color: #ffd400; margin-left: auto; }
+.test-result { margin: 6px 0 0; }
+.test-table { width: 100%; margin-top: 6px; border-collapse: collapse; font-size: 12px; }
+.test-table th, .test-table td { padding: 2px 4px; border-bottom: 1px solid rgba(255, 255, 255, 0.2); }

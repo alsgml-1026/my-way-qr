@@ -10,15 +10,19 @@ API (docs/architecture.png 의 단계 기호와 같음)
 - C  POST /api/transform         AI 맞춤 화면 (원본 메뉴 + 내 설정 → 검사 통과한 설계도 + 원본 가격)
 - D  POST /api/orders            주문 → 서버가 원본으로 금액 재계산 → 목업 결제 → 주문번호
 - E  GET  /api/sessions/{id}     키오스크가 2초마다 주문 완료 여부 확인
+-    POST /api/sessions/{id}/test-start, GET /api/test-results   사용자 테스트 시간 기록 (/kiosk?test)
 -    GET  /api/health, /api/host 개발용
 """
+import csv
 import json
 import os
 import secrets
 import socket
 import threading
 import time
+from datetime import datetime
 from pathlib import Path
+from typing import Literal
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
@@ -116,7 +120,7 @@ def create_session(body: SessionCreate):
         sid = _new_session_id()
         while sid in SESSIONS:
             sid = _new_session_id()
-        SESSIONS[sid] = {"store": body.store, "status": "waiting", "order": None, "created": now}
+        SESSIONS[sid] = {"store": body.store, "status": "waiting", "order": None, "created": now, "test": None}
     return {"session": sid, "store": body.store}
 
 
@@ -132,6 +136,9 @@ def get_session(sid: str):
         "status": s["status"],  # waiting(주문 대기) | paid(결제 완료)
         "orderNo": order["orderNo"] if order else None,
         "total": order["total"] if order else None,
+        "channel": order["channel"] if order else None,  # phone(내 방식 QR) | kiosk(기존 화면)
+        "seconds": order.get("seconds") if order else None,  # 사용자 테스트: 시작 → 결제까지 걸린 초
+        "test": s["test"],  # 사용자 테스트 진행 중이면 {participant, startedAt}
     }
 
 
@@ -145,6 +152,10 @@ class OrderLine(BaseModel):
 class OrderCreate(BaseModel):
     session: str
     items: list[OrderLine] = Field(min_length=1)
+    # 아래는 사용자 테스트 기록용 (금액 계산에는 쓰지 않음)
+    channel: Literal["phone", "kiosk"] = "phone"  # phone = 내 방식 QR, kiosk = 기존 키오스크 화면
+    undo: int = Field(0, ge=0, le=999)  # 되돌리기(이전·취소·빼기) 누른 횟수
+    profile: TransformProfile | None = None  # 폰 설정(글씨·쉬운 말)
 
 
 def price_line(store: dict, line: OrderLine) -> dict:
@@ -184,10 +195,71 @@ def create_order(body: OrderCreate):
             raise HTTPException(409, "이미 주문이 끝난 창구예요. 키오스크 QR 을 다시 찍어 주세요.")
         _order_seq += 1
         order = {"orderNo": _order_seq, "total": total, "lines": lines, "paidAt": time.time(),
-                 "payment": "mock"}  # 목업 결제: 실제 결제 없이 성공 처리
+                 "payment": "mock", "channel": body.channel}  # 목업 결제: 실제 결제 없이 성공 처리
+        if s["test"]:
+            order["seconds"] = round(order["paidAt"] - s["test"]["startedAt"], 1)
         s["order"] = order
         s["status"] = "paid"
-    return {"orderNo": order["orderNo"], "total": total, "lines": lines}
+    if s["test"]:
+        write_test_result(s, order, body)
+    return {"orderNo": order["orderNo"], "total": total, "lines": lines, "seconds": order.get("seconds")}
+
+
+# ───────────────── 사용자 테스트 기록 (/kiosk?test) ─────────────────
+# 진행자가 키오스크에서 '시작'을 누른 순간 → 결제 완료까지 걸린 시간을 서버 시계로 잰다.
+# 기존 키오스크 화면과 내 방식 QR 이 같은 창구·같은 메뉴·같은 시계를 쓰므로 공정하게 비교된다.
+TEST_LOG = Path(__file__).resolve().parent.parent / "test_results" / "사용자테스트.csv"
+TEST_FIELDS = ["시각", "참가자", "매장", "방식", "걸린초", "되돌리기", "금액", "메뉴수", "글씨", "쉬운말"]
+CHANNEL_NAMES = {"phone": "내 방식 QR", "kiosk": "기존 키오스크"}
+_log_lock = threading.Lock()
+
+
+class TestStart(BaseModel):
+    participant: str = Field(min_length=1, max_length=20)  # 예: P1 (이름 대신 번호)
+
+
+@app.post("/api/sessions/{sid}/test-start")
+def test_start(sid: str, body: TestStart):
+    s = SESSIONS.get(sid)
+    if not s:
+        raise HTTPException(404, "없는 주문 창구예요")
+    with _lock:
+        if s["status"] != "waiting":
+            raise HTTPException(409, "이미 주문이 끝난 창구예요")
+        s["test"] = {"participant": body.participant.strip(), "startedAt": time.time()}
+    return {"session": sid, **s["test"]}
+
+
+def write_test_result(s: dict, order: dict, body: OrderCreate) -> None:
+    row = {
+        "시각": datetime.fromtimestamp(order["paidAt"]).strftime("%Y-%m-%d %H:%M:%S"),
+        "참가자": s["test"]["participant"],
+        "매장": s["store"],
+        "방식": CHANNEL_NAMES[body.channel],
+        "걸린초": order["seconds"],
+        "되돌리기": body.undo,
+        "금액": order["total"],
+        "메뉴수": sum(ln["qty"] for ln in order["lines"]),
+        "글씨": body.profile.fontSize if body.profile else "",
+        "쉬운말": ("켬" if body.profile.easyWords else "끔") if body.profile else "",
+    }
+    with _log_lock:
+        TEST_LOG.parent.mkdir(exist_ok=True)
+        new = not TEST_LOG.exists()
+        with TEST_LOG.open("a", encoding="utf-8-sig" if new else "utf-8", newline="") as f:  # 엑셀에서 한글이 안 깨지게
+            w = csv.DictWriter(f, fieldnames=TEST_FIELDS)
+            if new:
+                w.writeheader()
+            w.writerow(row)
+
+
+@app.get("/api/test-results")
+def test_results(limit: int = 20):
+    if not TEST_LOG.exists():
+        return []
+    with TEST_LOG.open(encoding="utf-8-sig", newline="") as f:
+        rows = list(csv.DictReader(f))
+    return rows[-limit:][::-1]  # 최근 것부터
 
 
 # ───────────────── 개발용 ─────────────────

@@ -27,6 +27,9 @@ export interface SessionState {
   status: 'waiting' | 'paid'
   orderNo: number | null
   total: number | null
+  channel: 'phone' | 'kiosk' | null // 어디서 주문했나: 내 방식 QR(폰) / 기존 키오스크 화면
+  seconds: number | null // 사용자 테스트: 시작 → 결제까지 걸린 초
+  test: TestState | null
 }
 
 async function call<T>(url: string, init?: RequestInit): Promise<T> {
@@ -145,8 +148,40 @@ export interface OrderResult {
   orderNo: number
   total: number // 서버가 원본 메뉴로 다시 계산한 금액
   lines: { id: string; name: string; qty: number; unitPrice: number; amount: number }[]
+  seconds: number | null
+}
+
+/** 사용자 테스트 기록용 (금액 계산과 무관) */
+export interface OrderExtra {
+  channel: 'phone' | 'kiosk'
+  undo: number // 되돌리기(이전·취소·빼기) 누른 횟수
+  profile?: { fontSize: string; easyWords: boolean }
 }
 
 /** D. 주문 → 서버가 금액을 다시 계산하고 목업 결제 → 주문번호 */
-export const createOrder = (session: string, items: OrderLine[]) =>
-  call<OrderResult>('/api/orders', json({ session, items }))
+export const createOrder = (session: string, items: OrderLine[], extra?: OrderExtra) =>
+  call<OrderResult>('/api/orders', json({ session, items, ...extra }))
+
+// ───── 사용자 테스트 (/kiosk?test) ─────
+export interface TestState {
+  participant: string
+  startedAt: number // 서버 시각(초)
+}
+
+export interface TestResult {
+  시각: string
+  참가자: string
+  매장: string
+  방식: string
+  걸린초: string
+  되돌리기: string
+  금액: string
+  메뉴수: string
+  글씨: string
+  쉬운말: string
+}
+
+export const startTest = (session: string, participant: string) =>
+  call<TestState & { session: string }>(`/api/sessions/${encodeURIComponent(session)}/test-start`, json({ participant }))
+
+export const fetchTestResults = () => call<TestResult[]>('/api/test-results')

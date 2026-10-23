@@ -19,3 +19,6 @@ Thumbs.db
 *.log
 .vscode/
 .idea/
+
+# 사용자 테스트 기록 (참가자 결과 — 보고서용으로 따로 정리)
+backend/test_results/

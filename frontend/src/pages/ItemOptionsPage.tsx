@@ -4,6 +4,7 @@ import { won } from '../api'
 import { addToCart } from '../cart'
 import { loadProfile, profileAttrs } from '../profile'
 import { useScreen } from '../useScreen'
+import { countUndo } from '../undo'
 import { readVisit } from '../visit'
 
 // 옵션 고르기 — 한 화면에 질문 하나 (AGENTS.md 3. 옵션 화면이 지킬 약속)
@@ -36,7 +37,11 @@ export default function ItemOptionsPage() {
     setChosen((prev) => ({ ...prev, [key!]: choiceId }))
     setStep((s) => s + 1)
   }
-  const back = () => (step > 0 ? setStep((s) => s - 1) : navigate('/m'))
+  const back = () => {
+    countUndo(visit.session) // 사용자 테스트: 되돌리기 횟수
+    if (step > 0) setStep((s) => s - 1)
+    else navigate('/m')
+  }
   const add = () => {
     addToCart(visit.session, { id: item!.id, options: chosen, qty })
     navigate('/m/cart')
