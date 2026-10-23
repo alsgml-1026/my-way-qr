@@ -9,6 +9,14 @@ export interface MenuItem {
   desc: string
   options: string[]
   must?: { fact: string; any: string[] }[] // 꼭 남길 정보 (AI 설명에서 빠지면 검사 실패)
+  health: Health | null // 서버가 붙인 건강 표시 정보 (메뉴 파일에 영양 정보가 없으면 null)
+}
+
+/** 건강 표시 정보 — 서버가 메뉴 파일 수치 + 기준값(backend/app/health.py)으로 만든다 */
+export interface Health {
+  kcal: number | null
+  tags: { id: string; label: string; amount: string }[] // 기준을 넘은 것만: '당 많음' '30g'
+  allergens: { id: string; name: string }[]
 }
 
 export interface Menu {
@@ -62,6 +70,10 @@ export const createSession = (store: string) => call<{ session: string; store: s
 /** E. 창구 상태 확인 (키오스크가 2초마다) */
 export const getSession = (sid: string) => call<SessionState>(`/api/sessions/${encodeURIComponent(sid)}`)
 
+/** 서버에서 켜고 끄는 기능 (건강 표시: 환경변수 HEALTH_INFO=0 이면 꺼짐) */
+export const fetchFeatures = () =>
+  call<{ features?: { health?: boolean } }>('/api/health').then((r) => ({ health: r.features?.health ?? false }))
+
 /** 개발용: PC 내부망 IP (QR 주소 만들 때) */
 export const fetchHost = () => call<{ ip: string }>('/api/host')
 
@@ -77,6 +89,7 @@ export interface ScreenItem {
   desc: string // AI 가 바꾼 설명 (원본 화면이면 원래 설명)
   originalDesc: string
   options: string[] // 질문 순서대로 정렬됨
+  health: Health | null
 }
 
 export interface ScreenOption {
@@ -126,7 +139,15 @@ export function screenFromMenu(menu: Menu): Pick<Screen, 'store' | 'storeId' | '
       title: c.name,
       items: menu.items
         .filter((i) => i.category === c.id)
-        .map((i) => ({ id: i.id, name: i.name, price: i.price, desc: i.desc, originalDesc: i.desc, options: i.options })),
+        .map((i) => ({
+          id: i.id,
+          name: i.name,
+          price: i.price,
+          desc: i.desc,
+          originalDesc: i.desc,
+          options: i.options,
+          health: i.health,
+        })),
     })),
     options: Object.fromEntries(
       Object.entries(menu.options).map(([k, o]) => [

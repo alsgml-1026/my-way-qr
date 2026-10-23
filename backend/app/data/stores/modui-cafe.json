@@ -1,8 +1,9 @@
 {
   "id": "modui-cafe",
   "store": "모두의 카페",
-  "version": "2026-10-23.1",
+  "version": "2026-10-23.2",
   "currency": "원",
+  "nutritionSource": "시제품용 예시 값 (기본 옵션 1잔·1조각 기준) — 실제 매장 영양성분표로 교체 필요",
   "categories": [
     {
       "id": "coffee",
@@ -95,7 +96,14 @@
         "size",
         "shot",
         "decaf"
-      ]
+      ],
+      "nutrition": {
+        "kcal": 10,
+        "sugar": 0,
+        "sodium": 5,
+        "caffeine": 150
+      },
+      "allergens": []
     },
     {
       "id": "latte",
@@ -108,6 +116,15 @@
         "size",
         "shot",
         "decaf"
+      ],
+      "nutrition": {
+        "kcal": 180,
+        "sugar": 13,
+        "sodium": 120,
+        "caffeine": 150
+      },
+      "allergens": [
+        "milk"
       ]
     },
     {
@@ -121,6 +138,15 @@
         "size",
         "shot",
         "decaf"
+      ],
+      "nutrition": {
+        "kcal": 250,
+        "sugar": 30,
+        "sodium": 130,
+        "caffeine": 150
+      },
+      "allergens": [
+        "milk"
       ]
     },
     {
@@ -142,7 +168,14 @@
             "찬 물"
           ]
         }
-      ]
+      ],
+      "nutrition": {
+        "kcal": 10,
+        "sugar": 0,
+        "sodium": 10,
+        "caffeine": 200
+      },
+      "allergens": []
     },
     {
       "id": "einspanner",
@@ -158,6 +191,15 @@
             "빨대"
           ]
         }
+      ],
+      "nutrition": {
+        "kcal": 280,
+        "sugar": 22,
+        "sodium": 90,
+        "caffeine": 150
+      },
+      "allergens": [
+        "milk"
       ]
     },
     {
@@ -169,6 +211,16 @@
       "options": [
         "temperature",
         "size"
+      ],
+      "nutrition": {
+        "kcal": 330,
+        "sugar": 38,
+        "sodium": 200,
+        "caffeine": 10
+      },
+      "allergens": [
+        "milk",
+        "soy"
       ]
     },
     {
@@ -190,6 +242,15 @@
             "차갑게 만"
           ]
         }
+      ],
+      "nutrition": {
+        "kcal": 300,
+        "sugar": 42,
+        "sodium": 110,
+        "caffeine": 0
+      },
+      "allergens": [
+        "milk"
       ]
     },
     {
@@ -209,7 +270,14 @@
             "톡 쏘"
           ]
         }
-      ]
+      ],
+      "nutrition": {
+        "kcal": 180,
+        "sugar": 42,
+        "sodium": 20,
+        "caffeine": 0
+      },
+      "allergens": []
     },
     {
       "id": "chamomile",
@@ -229,7 +297,14 @@
             "카페인은 없"
           ]
         }
-      ]
+      ],
+      "nutrition": {
+        "kcal": 0,
+        "sugar": 0,
+        "sodium": 0,
+        "caffeine": 0
+      },
+      "allergens": []
     },
     {
       "id": "earl-grey",
@@ -250,7 +325,14 @@
             "카페인 들어"
           ]
         }
-      ]
+      ],
+      "nutrition": {
+        "kcal": 0,
+        "sugar": 0,
+        "sodium": 5,
+        "caffeine": 50
+      },
+      "allergens": []
     },
     {
       "id": "cheesecake",
@@ -268,6 +350,17 @@
             "1 조각"
           ]
         }
+      ],
+      "nutrition": {
+        "kcal": 420,
+        "sugar": 25,
+        "sodium": 280,
+        "caffeine": 0
+      },
+      "allergens": [
+        "milk",
+        "egg",
+        "wheat"
       ]
     },
     {
@@ -284,6 +377,17 @@
             "시럽"
           ]
         }
+      ],
+      "nutrition": {
+        "kcal": 350,
+        "sugar": 12,
+        "sodium": 320,
+        "caffeine": 0
+      },
+      "allergens": [
+        "milk",
+        "egg",
+        "wheat"
       ]
     }
   ]

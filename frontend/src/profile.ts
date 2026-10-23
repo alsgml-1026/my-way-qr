@@ -1,4 +1,5 @@
 // 사용자 접근성 설정(프로필). 폰 브라우저(localStorage)에 저장해 다음 방문 때 다시 묻지 않는다.
+import type { Watch } from './health'
 
 export type FontSize = 'normal' | 'large' | 'xlarge'
 
@@ -7,6 +8,10 @@ export interface Profile {
   bigButtons: boolean // 버튼·터치 영역 크게
   easyWords: boolean // 어려운 말을 쉬운 말로 (AI 변환)
   highContrast: boolean // 고대비 (검은 바탕 + 밝은 글씨)
+  // 건강 맞춤 표시 — 이 폰에만 저장, 서버로 보내지 않음 (health.ts)
+  watch: Watch[] // 조심할 성분
+  allergies: string[] // 알레르기 ID
+  showKcal: boolean // 칼로리 보기
 }
 
 export const DEFAULT_PROFILE: Profile = {
@@ -14,6 +19,9 @@ export const DEFAULT_PROFILE: Profile = {
   bigButtons: true,
   easyWords: true,
   highContrast: false,
+  watch: [],
+  allergies: [],
+  showKcal: false,
 }
 
 const KEY = 'my-way-qr.profile.v1'
@@ -59,5 +67,7 @@ export function describeProfile(p: Profile): string[] {
   if (p.bigButtons) out.push('큰 버튼')
   if (p.easyWords) out.push('쉬운 설명')
   if (p.highContrast) out.push('고대비')
+  if (p.watch.length || p.allergies.length) out.push('건강 표시')
+  if (p.showKcal) out.push('칼로리')
   return out
 }

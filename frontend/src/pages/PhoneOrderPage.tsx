@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { won } from '../api'
 import { loadCart } from '../cart'
+import { healthAlerts } from '../health'
 import { describeProfile, loadProfile, profileAttrs } from '../profile'
 import { useScreen } from '../useScreen'
 import { readVisit } from '../visit'
@@ -48,15 +49,27 @@ export default function PhoneOrderPage() {
           <section key={g.title} className="category">
             <h2>{g.title}</h2>
             <ul className="item-list">
-              {g.items.map((it) => (
-                <li key={it.id}>
-                  <button className="card item" onClick={() => navigate(`/m/item/${encodeURIComponent(it.id)}`)}>
-                    <span className="item-name">{it.name}</span>
-                    <span className="item-desc">{it.desc}</span>
-                    <span className="item-price">{won(it.price)}</span>
-                  </button>
-                </li>
-              ))}
+              {g.items.map((it) => {
+                const alerts = healthAlerts(it.health, profile)
+                const kcal = profile.showKcal ? it.health?.kcal : null
+                return (
+                  <li key={it.id}>
+                    <button className="card item" onClick={() => navigate(`/m/item/${encodeURIComponent(it.id)}`)}>
+                      <span className="item-name">{it.name}</span>
+                      <span className="item-desc">{it.desc}</span>
+                      {(alerts.length > 0 || kcal != null) && (
+                        <span className="health-row">
+                          {alerts.map((a) => (
+                            <span key={a.key} className="health-tag warn">⚠ {a.text}</span>
+                          ))}
+                          {kcal != null && <span className="health-tag">{kcal.toLocaleString('ko-KR')}kcal</span>}
+                        </span>
+                      )}
+                      <span className="item-price">{won(it.price)}</span>
+                    </button>
+                  </li>
+                )
+              })}
             </ul>
           </section>
         ))}

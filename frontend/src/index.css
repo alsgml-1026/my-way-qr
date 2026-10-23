@@ -13,6 +13,8 @@
   --accent-text: #ffffff;
   --selected: #e3edf7;
   --error: #b42318;
+  --warn: #9a3412;     /* 건강 표시 */
+  --warn-bg: #fff1e6;
   font-family: 'Pretendard', 'Malgun Gothic', 'Apple SD Gothic Neo', system-ui, sans-serif;
 }
 
@@ -28,6 +30,7 @@ body { background: var(--bg); color: var(--text); word-break: keep-all; overflow
 .app[data-contrast='high'] {
   --bg: #000000; --surface: #111111; --text: #ffffff; --muted: #e6e6e6;
   --line: #ffffff; --accent: #ffd400; --accent-text: #000000; --selected: #333300; --error: #ff8a80;
+  --warn: #ffb74d; --warn-bg: #2a1a00;
 }
 
 /* ───── 공통 레이아웃 ───── */
@@ -230,3 +233,14 @@ a.bottom-bar { min-height: var(--tap); align-items: center; justify-content: spa
 /* 키오스크 매장 고르기 (시연·두 번째 매장 확인용) */
 .kiosk-store-pick { font-size: 11px; opacity: 0.9; }
 .kiosk-store-pick select { font-size: 11px; padding: 1px 4px; border-radius: 3px; border: 0; }
+
+/* ───── 건강 맞춤 표시 (health.ts) ───── */
+.chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip-row .choice { padding: 0 1em; }
+.small-hint { font-size: 0.8em; margin: 0 0 0.6em; }
+.health-row { display: flex; flex-wrap: wrap; gap: 6px; margin: 2px 0; }
+.health-tag { font-size: 0.8em; font-weight: 700; padding: 2px 10px; border-radius: 999px; border: 2px solid var(--line); }
+.health-tag.warn { color: var(--warn); background: var(--warn-bg); border-color: var(--warn); }
+.health-box { margin: 1em 0 0; padding: 12px 14px; border-radius: 12px; border: 2px solid var(--warn); background: var(--warn-bg); color: var(--warn); }
+.health-box ul { margin: 6px 0; padding-left: 0; list-style: none; font-weight: 700; }
+.health-box small { display: block; font-size: 0.75em; color: var(--text); opacity: 0.8; }
