@@ -92,7 +92,8 @@ export default function ItemOptionsPage() {
                   <ul className="summary">
                     {keys.map((k) => (
                       <li key={k}>
-                        {screen?.options[k]?.name}: {screen?.options[k]?.choices.find((c) => c.id === chosen[k])?.label}
+                        {/* 원래 옵션 이름(사이즈·샷 추가)은 어려운 말이라 빼고, AI 가 바꾼 선택지만 보여 준다 */}
+                        {screen?.options[k]?.choices.find((c) => c.id === chosen[k])?.label}
                       </li>
                     ))}
                   </ul>
