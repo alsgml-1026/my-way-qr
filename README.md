@@ -58,7 +58,22 @@ npm run dev
 - PC: http://localhost:5180 (키오스크 `/kiosk`, AI 변환 확인 `/lab`)
 - 폰(같은 와이파이): http://<PC의 IP>:5180/m
 
+## 배포 (공개 테스트 URL)
+`Dockerfile` 하나로 화면과 API 를 **주소 하나**로 올린다. 주문 창구·주문번호를 서버 메모리에 보관하므로 **서버는 반드시 1대**
+(Vercel 같은 서버리스는 요청마다 다른 서버가 받을 수 있어 맞지 않음).
+
+Render 무료 기준:
+1. GitHub 저장소 연결 → New **Web Service** → Runtime **Docker** → Instance **Free**
+2. Environment 에 `OPENAI_API_KEY` 입력 (파일·코드에 쓰지 않음). `ALLOW_FRESH=0` 은 Dockerfile 에 들어 있음
+3. 무료 서버는 15분 동안 접속이 없으면 잠든다 → [cron-job.org](https://cron-job.org) 에서 `https://<주소>/api/health` 를 10분마다 호출
+4. 확인: `https://<주소>/kiosk` 를 PC 에 띄우고 폰으로 QR → 주문 → 키오스크에 주문번호
+
+- 수상 후에는 Render 요금제만 유료로 바꾸면 된다 (잠들지 않음, 코드 변경 없음)
+- 서버가 다시 켜지면 열려 있던 창구는 사라지지만 키오스크가 새 창구를 자동으로 연다
+- `/kiosk?debug` 이면 QR 주소 글자를 보여 준다 (영상 촬영 때는 debug 없이)
+
 ## 상태
 🚧 개발 중 (2026-10-20 시작)
 - ✅ 키오스크 QR · 설정 화면 · 주문 창구/주문 API · AI 화면 변환(검사 8개) · 폰 메뉴 적용
-- ⏳ 옵션 → 장바구니 → 결제 화면 · 배포(테스트 URL) · 두 번째 매장 · 사용자 테스트
+- ✅ 옵션(한 화면 한 질문) → 주문 목록 → 목업 결제 → 완료 · 배포 설정(Dockerfile)
+- ⏳ 실제 배포(테스트 URL) · 두 번째 매장 · 사용자 테스트
