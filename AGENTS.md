@@ -1,6 +1,6 @@
 # 작업 규칙 (사람·AI 코딩 도구 공통)
 
-이 저장소는 사람 2명(민희·대리님)과 AI 코딩 도구 2개(Claude Code·아스트라)가 함께 만든다.
+이 저장소는 사람 2명(정민희·황재성)과 AI 코딩 도구 2개(Claude Code·아스트라)가 함께 만든다.
 **코드를 고치기 전에 이 파일을 먼저 읽고 지킨다.** (확정 — 2026-10-23, 바꿀 때는 민희 확인)
 
 ## 1. 서비스 원칙 (절대 바꾸지 않음)
@@ -15,9 +15,9 @@
 |---|---|---|
 | AI 변환 규칙·지시문·검사 | 민희 | `backend/app/ai_rules.py`, `backend/app/transform.py` |
 | 폰 메뉴 화면 | 민희 | `frontend/src/pages/PhoneOrderPage.tsx` |
-| 폰 옵션 → 장바구니 → 결제 → 완료 | 대리님 | `frontend/src/pages/` 새 파일 |
-| 배포, 서버 정리 | 대리님 | 배포 설정 파일, `backend/app/main.py` |
-| 매장 추가 | 대리님 | `backend/app/data/stores/새매장.json` (코드 수정 없이 파일만) |
+| 폰 옵션 → 장바구니 → 결제 → 완료 | 황재성 | `frontend/src/pages/` 새 파일 |
+| 배포, 서버 정리 | 황재성 | 배포 설정 파일, `backend/app/main.py` |
+| 매장 추가 | 황재성 | `backend/app/data/stores/새매장.json` (코드 수정 없이 파일만) |
 
 남의 영역 파일을 고쳐야 하면 PR 설명에 이유를 쓴다.
 
