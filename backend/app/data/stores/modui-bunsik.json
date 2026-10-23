@@ -1,49 +1,106 @@
 {
   "id": "modui-bunsik",
   "store": "모두의 분식",
-  "version": "2026-10-23.1",
+  "version": "2026-10-23.2",
   "currency": "원",
+  "nutritionSource": "시제품용 예시 값 (기본 옵션 1인분 기준) — 실제 매장 영양성분표로 교체 필요",
   "categories": [
-    { "id": "gimbap", "name": "김밥류" },
-    { "id": "tteok", "name": "떡볶이류" },
-    { "id": "noodle", "name": "면류" },
-    { "id": "side", "name": "사이드" }
+    {
+      "id": "gimbap",
+      "name": "김밥류"
+    },
+    {
+      "id": "tteok",
+      "name": "떡볶이류"
+    },
+    {
+      "id": "noodle",
+      "name": "면류"
+    },
+    {
+      "id": "side",
+      "name": "사이드"
+    }
   ],
   "options": {
     "spicy": {
       "name": "맵기",
       "choices": [
-        { "id": "normal", "name": "보통맛", "price": 0 },
-        { "id": "mild", "name": "순한맛", "price": 0 },
-        { "id": "hot", "name": "매운맛", "price": 0 }
+        {
+          "id": "normal",
+          "name": "보통맛",
+          "price": 0
+        },
+        {
+          "id": "mild",
+          "name": "순한맛",
+          "price": 0
+        },
+        {
+          "id": "hot",
+          "name": "매운맛",
+          "price": 0
+        }
       ]
     },
     "portion": {
       "name": "곱빼기",
       "choices": [
-        { "id": "regular", "name": "기본", "price": 0 },
-        { "id": "double", "name": "곱빼기", "price": 1500 }
+        {
+          "id": "regular",
+          "name": "기본",
+          "price": 0
+        },
+        {
+          "id": "double",
+          "name": "곱빼기",
+          "price": 1500
+        }
       ]
     },
     "egg": {
       "name": "계란 추가",
       "choices": [
-        { "id": "none", "name": "없음", "price": 0 },
-        { "id": "add", "name": "계란+1", "price": 500 }
+        {
+          "id": "none",
+          "name": "없음",
+          "price": 0
+        },
+        {
+          "id": "add",
+          "name": "계란+1",
+          "price": 500
+        }
       ]
     },
     "takeout": {
       "name": "포장",
       "choices": [
-        { "id": "dine-in", "name": "매장", "price": 0 },
-        { "id": "takeout", "name": "포장", "price": 0 }
+        {
+          "id": "dine-in",
+          "name": "매장",
+          "price": 0
+        },
+        {
+          "id": "takeout",
+          "name": "포장",
+          "price": 0
+        }
       ]
     },
     "sundae": {
       "name": "내장",
       "choices": [
-        { "id": "only", "name": "순대만", "price": 0 },
-        { "id": "mix", "name": "내장 섞어서", "price": 0 }
+        {
+          "id": "only",
+          "name": "순대만",
+          "price": 0
+        },
+        {
+          "id": "mix",
+          "name": "내장 섞어서",
+          "price": 0
+        }
       ]
     }
   },
@@ -54,7 +111,21 @@
       "name": "김밥",
       "price": 3500,
       "desc": "햄·단무지·계란 기본김밥",
-      "options": ["takeout"]
+      "options": [
+        "takeout"
+      ],
+      "nutrition": {
+        "kcal": 480,
+        "sugar": 6,
+        "sodium": 900,
+        "caffeine": 0
+      },
+      "allergens": [
+        "egg",
+        "wheat",
+        "soy",
+        "pork"
+      ]
     },
     {
       "id": "tuna-gimbap",
@@ -62,8 +133,29 @@
       "name": "참치김밥",
       "price": 4500,
       "desc": "참치마요+깻잎",
-      "options": ["takeout"],
-      "must": [{ "fact": "마요네즈가 들어 있어요", "any": ["마요네즈", "마요"] }]
+      "options": [
+        "takeout"
+      ],
+      "must": [
+        {
+          "fact": "마요네즈가 들어 있어요",
+          "any": [
+            "마요네즈",
+            "마요"
+          ]
+        }
+      ],
+      "nutrition": {
+        "kcal": 550,
+        "sugar": 6,
+        "sodium": 1000,
+        "caffeine": 0
+      },
+      "allergens": [
+        "egg",
+        "wheat",
+        "soy"
+      ]
     },
     {
       "id": "tteokbokki",
@@ -71,7 +163,20 @@
       "name": "떡볶이",
       "price": 5000,
       "desc": "쌀떡+어묵, 고추장 베이스",
-      "options": ["spicy", "portion"]
+      "options": [
+        "spicy",
+        "portion"
+      ],
+      "nutrition": {
+        "kcal": 600,
+        "sugar": 25,
+        "sodium": 1500,
+        "caffeine": 0
+      },
+      "allergens": [
+        "wheat",
+        "soy"
+      ]
     },
     {
       "id": "rose-tteokbokki",
@@ -79,8 +184,30 @@
       "name": "로제떡볶이",
       "price": 6000,
       "desc": "로제소스(크림+고추장)",
-      "options": ["spicy", "portion"],
-      "must": [{ "fact": "우유가 들어 있어요", "any": ["우유", "크림"] }]
+      "options": [
+        "spicy",
+        "portion"
+      ],
+      "must": [
+        {
+          "fact": "우유가 들어 있어요",
+          "any": [
+            "우유",
+            "크림"
+          ]
+        }
+      ],
+      "nutrition": {
+        "kcal": 750,
+        "sugar": 22,
+        "sodium": 1300,
+        "caffeine": 0
+      },
+      "allergens": [
+        "milk",
+        "wheat",
+        "soy"
+      ]
     },
     {
       "id": "rabokki",
@@ -88,7 +215,20 @@
       "name": "라볶이",
       "price": 6000,
       "desc": "떡볶이+라면사리",
-      "options": ["spicy", "portion"]
+      "options": [
+        "spicy",
+        "portion"
+      ],
+      "nutrition": {
+        "kcal": 750,
+        "sugar": 22,
+        "sodium": 2000,
+        "caffeine": 0
+      },
+      "allergens": [
+        "wheat",
+        "soy"
+      ]
     },
     {
       "id": "ramyeon",
@@ -96,7 +236,19 @@
       "name": "라면",
       "price": 4500,
       "desc": "얼큰한 국물 라면, 파 토핑",
-      "options": ["egg"]
+      "options": [
+        "egg"
+      ],
+      "nutrition": {
+        "kcal": 500,
+        "sugar": 4,
+        "sodium": 1800,
+        "caffeine": 0
+      },
+      "allergens": [
+        "wheat",
+        "soy"
+      ]
     },
     {
       "id": "cheese-ramyeon",
@@ -104,8 +256,28 @@
       "name": "치즈라면",
       "price": 5000,
       "desc": "라면+슬라이스 치즈",
-      "options": ["egg"],
-      "must": [{ "fact": "치즈가 들어 있어요", "any": ["치즈"] }]
+      "options": [
+        "egg"
+      ],
+      "must": [
+        {
+          "fact": "치즈가 들어 있어요",
+          "any": [
+            "치즈"
+          ]
+        }
+      ],
+      "nutrition": {
+        "kcal": 580,
+        "sugar": 4,
+        "sodium": 1900,
+        "caffeine": 0
+      },
+      "allergens": [
+        "milk",
+        "wheat",
+        "soy"
+      ]
     },
     {
       "id": "jjolmyeon",
@@ -113,8 +285,30 @@
       "name": "쫄면",
       "price": 6000,
       "desc": "쫄깃한 면+야채, 초고추장",
-      "options": ["portion"],
-      "must": [{ "fact": "차가운 면이에요", "any": ["차갑", "차가운", "시원"] }]
+      "options": [
+        "portion"
+      ],
+      "must": [
+        {
+          "fact": "차가운 면이에요",
+          "any": [
+            "차갑",
+            "차가운",
+            "시원"
+          ]
+        }
+      ],
+      "nutrition": {
+        "kcal": 550,
+        "sugar": 28,
+        "sodium": 1200,
+        "caffeine": 0
+      },
+      "allergens": [
+        "egg",
+        "wheat",
+        "soy"
+      ]
     },
     {
       "id": "sundae",
@@ -122,7 +316,20 @@
       "name": "순대",
       "price": 5000,
       "desc": "찰순대 1인분",
-      "options": ["sundae"]
+      "options": [
+        "sundae"
+      ],
+      "nutrition": {
+        "kcal": 400,
+        "sugar": 2,
+        "sodium": 900,
+        "caffeine": 0
+      },
+      "allergens": [
+        "pork",
+        "wheat",
+        "soy"
+      ]
     },
     {
       "id": "twigim",
@@ -131,7 +338,26 @@
       "price": 5000,
       "desc": "김말이·고구마·새우 5pc",
       "options": [],
-      "must": [{ "fact": "새우가 들어 있어요", "any": ["새우"] }]
+      "must": [
+        {
+          "fact": "새우가 들어 있어요",
+          "any": [
+            "새우"
+          ]
+        }
+      ],
+      "nutrition": {
+        "kcal": 520,
+        "sugar": 3,
+        "sodium": 700,
+        "caffeine": 0
+      },
+      "allergens": [
+        "shellfish",
+        "egg",
+        "wheat",
+        "soy"
+      ]
     },
     {
       "id": "eomuktang",
@@ -139,7 +365,17 @@
       "name": "어묵탕",
       "price": 4000,
       "desc": "부산어묵, 국물 리필 가능",
-      "options": []
+      "options": [],
+      "nutrition": {
+        "kcal": 200,
+        "sugar": 4,
+        "sodium": 1400,
+        "caffeine": 0
+      },
+      "allergens": [
+        "wheat",
+        "soy"
+      ]
     }
   ]
 }

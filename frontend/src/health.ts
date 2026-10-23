@@ -24,7 +24,7 @@ export const ALLERGEN_CHOICES: { id: string; label: string }[] = [
   { id: 'pork', label: '돼지고기' },
 ]
 
-export const HEALTH_NOTE = '메뉴판 성분 정보를 보여 드려요. 의학적 조언이 아니에요.'
+export const HEALTH_NOTE = '메뉴판 성분 정보를 보여 드려요. 지금은 시연용 예시 수치예요. 의학적 조언이 아니에요.'
 
 export interface HealthAlert {
   key: string
