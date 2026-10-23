@@ -32,7 +32,7 @@ from app.transform import transform  # noqa: E402
 repeat = int(sys.argv[1]) if len(sys.argv) > 1 and sys.argv[1].isdigit() else 1
 show = "show" in sys.argv
 save = "save" in sys.argv
-store = json.loads((ROOT / "app" / "data" / "stores" / "dajeong-cafe.json").read_text(encoding="utf-8"))
+store = json.loads((ROOT / "app" / "data" / "stores" / "modui-cafe.json").read_text(encoding="utf-8"))
 FONT_KO = {"normal": "보통 글씨", "large": "큰 글씨", "xlarge": "아주 큰 글씨"}
 
 combos = [(f, e) for f in ("normal", "large", "xlarge") for e in (True, False)]

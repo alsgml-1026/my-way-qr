@@ -6,8 +6,8 @@ export interface Visit {
   session: string | null // 키오스크 QR 없이 /m 으로 바로 들어오면 null (개발용)
 }
 
-const KEY = 'my-way-qr.visit.v1'
-export const DEFAULT_STORE = 'dajeong-cafe'
+const KEY = 'my-way-qr.visit.v2'
+export const DEFAULT_STORE = 'modui-cafe'
 
 /** 주소에 store/session 이 있으면 저장하고, 없으면 이전에 저장한 값을 쓴다. */
 export function readVisit(search: string): Visit {

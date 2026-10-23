@@ -40,7 +40,7 @@ STORES: dict[str, dict] = {}
 for f in sorted(STORES_DIR.glob("*.json")):
     data = json.loads(f.read_text(encoding="utf-8"))
     STORES[data["id"]] = data
-DEFAULT_STORE = "dajeong-cafe"
+DEFAULT_STORE = "modui-cafe"
 
 
 def get_store(store_id: str) -> dict:
