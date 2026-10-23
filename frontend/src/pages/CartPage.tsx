@@ -4,6 +4,7 @@ import { createOrder, won, type OrderLine } from '../api'
 import { loadCart, saveCart } from '../cart'
 import { loadProfile, profileAttrs } from '../profile'
 import { useScreen } from '../useScreen'
+import { countUndo, readUndo } from '../undo'
 import { readVisit } from '../visit'
 
 // 주문 목록 → 결제(목업) → 완료 화면
@@ -33,15 +34,24 @@ export default function CartPage() {
     setLines(next)
     saveCart(visit.session, next)
   }
-  const changeQty = (idx: number, d: number) =>
+  const changeQty = (idx: number, d: number) => {
+    if (d < 0) countUndo(visit.session) // 사용자 테스트: 되돌리기 횟수
     update(lines.map((l, i) => (i === idx ? { ...l, qty: Math.min(20, Math.max(1, l.qty + d)) } : l)))
-  const remove = (idx: number) => update(lines.filter((_, i) => i !== idx))
+  }
+  const remove = (idx: number) => {
+    countUndo(visit.session)
+    update(lines.filter((_, i) => i !== idx))
+  }
 
   const pay = () => {
     if (!visit.session) return
     setPaying(true)
     setError(null)
-    createOrder(visit.session, lines)
+    createOrder(visit.session, lines, {
+      channel: 'phone',
+      undo: readUndo(visit.session),
+      profile: { fontSize: profile.fontSize, easyWords: profile.easyWords },
+    })
       .then((r) => {
         saveCart(visit.session, [])
         navigate('/m/done', { replace: true, state: { orderNo: r.orderNo, total: r.total } })
