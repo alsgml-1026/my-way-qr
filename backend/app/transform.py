@@ -16,6 +16,7 @@ import threading
 import time
 
 from . import ai_rules as R
+from .health import item_health
 
 MAX_RETRY = 2
 _cache: dict[tuple, dict] = {}
@@ -67,7 +68,7 @@ SCHEMA = {
 
 
 def menu_for_ai(store: dict) -> dict:
-    """AI 에 보낼 메뉴. 가격은 전부 뺀다."""
+    """AI 에 보낼 메뉴. 가격·영양 수치·알레르기는 전부 뺀다 (필요한 항목만 골라 보냄)."""
     used = {k for it in store["items"] for k in it["options"]}
     return {
         "store": store["store"],
@@ -218,6 +219,7 @@ def build_screen(store: dict, plan: dict | None) -> dict:
             "id": iid, "name": items[iid]["name"], "price": items[iid]["price"],
             "desc": descs.get(iid, items[iid]["desc"]), "originalDesc": items[iid]["desc"],
             "options": _ordered_option_keys(items[iid]["options"]),
+            "health": item_health(items[iid]),  # 영양 수치는 AI 를 거치지 않고 원본에서 (가격과 같은 원칙)
         } for iid in ids]})
 
     used = {k for it in store["items"] for k in it["options"]}

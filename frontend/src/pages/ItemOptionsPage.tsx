@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { Navigate, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { won } from '../api'
 import { addToCart } from '../cart'
+import { HEALTH_NOTE, healthAlerts } from '../health'
 import { loadProfile, profileAttrs } from '../profile'
 import { useScreen } from '../useScreen'
 import { countUndo } from '../undo'
@@ -27,6 +28,7 @@ export default function ItemOptionsPage() {
   if (screen && !item) return <Navigate to="/m" replace />
 
   const keys = item?.options ?? []
+  const alerts = healthAlerts(item?.health, profile)
   const key = keys[step] as string | undefined // undefined = 질문을 다 골라서 개수 정하는 화면
   const opt = key ? screen?.options[key] : undefined
   const unit =
@@ -102,6 +104,21 @@ export default function ItemOptionsPage() {
                       </li>
                     ))}
                   </ul>
+                )}
+                {/* 건강 표시: 담기 전에 한 번 더 알려 준다 (막지는 않음) */}
+                {alerts.length > 0 && (
+                  <div className="health-box" role="note">
+                    <strong>확인해 주세요</strong>
+                    <ul>
+                      {alerts.map((a) => (
+                        <li key={a.key}>⚠ {a.text}</li>
+                      ))}
+                    </ul>
+                    <small>{HEALTH_NOTE} 기본 선택 기준이에요.</small>
+                  </div>
+                )}
+                {profile.showKcal && item.health?.kcal != null && (
+                  <p className="muted">{item.health.kcal.toLocaleString('ko-KR')}kcal (기본 선택 기준)</p>
                 )}
                 <p className="total-line">{won(unit * qty)}</p>
                 <button className="btn primary block" onClick={add}>주문 목록에 담기</button>
