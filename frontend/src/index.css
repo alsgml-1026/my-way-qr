@@ -226,3 +226,7 @@ a.bottom-bar { min-height: var(--tap); align-items: center; justify-content: spa
 .test-result { margin: 6px 0 0; }
 .test-table { width: 100%; margin-top: 6px; border-collapse: collapse; font-size: 12px; }
 .test-table th, .test-table td { padding: 2px 4px; border-bottom: 1px solid rgba(255, 255, 255, 0.2); }
+
+/* 키오스크 매장 고르기 (시연·두 번째 매장 확인용) */
+.kiosk-store-pick { font-size: 11px; opacity: 0.9; }
+.kiosk-store-pick select { font-size: 11px; padding: 1px 4px; border-radius: 3px; border: 0; }

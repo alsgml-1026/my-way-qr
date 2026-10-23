@@ -24,12 +24,26 @@ import { DEFAULT_STORE } from '../visit'
 // 흐름: [A] 창구 열기 → QR 표시 → [E] 2초마다 주문 확인 → 완료 표시 → 새 창구
 // /kiosk?test  사용자 테스트: 진행자가 참가자 번호를 넣고 '시작' → 결제까지 걸린 시간을 서버가 기록
 // /kiosk?debug QR 주소 글자 표시
+// /kiosk?store=modui-bunsik  다른 매장 (위쪽 '매장' 목록으로도 바꿀 수 있음)
 const POLL_MS = 2000
 const DONE_SHOW_MS = 10000
 const TEST_DONE_SHOW_MS = 30000 // 테스트 때는 진행자가 결과를 볼 수 있게 더 오래
 
 type Done = { orderNo: number; total: number; channel: 'phone' | 'kiosk' | null; seconds: number | null }
 type Picking = { item: MenuItem; chosen: Record<string, string>; qty: number }
+
+// 서버에 있는 매장 목록 (매장 파일만 추가하면 여기 자동으로 나타난다)
+async function listStores(): Promise<{ id: string; name: string }[]> {
+  const res = await fetch('/api/health')
+  const { stores } = (await res.json()) as { stores: Record<string, string> }
+  return Promise.all(Object.keys(stores).map(async (id) => ({ id, name: (await fetchMenu(id)).store })))
+}
+
+function changeStore(id: string) {
+  const q = new URLSearchParams(location.search)
+  q.set('store', id)
+  location.search = q.toString() // 새 매장으로 다시 열기 (창구도 새로 열림)
+}
 
 export default function KioskPage() {
   const params = new URLSearchParams(location.search)
@@ -54,6 +68,11 @@ export default function KioskPage() {
   const [participant, setParticipant] = useState('P1')
   const [test, setTest] = useState<TestState | null>(null)
   const [results, setResults] = useState<TestResult[]>([])
+  const [stores, setStores] = useState<{ id: string; name: string }[]>([])
+
+  useEffect(() => {
+    listStores().then(setStores).catch(() => {}) // 목록을 못 받아도 지금 매장은 그대로 동작
+  }, [])
 
   // QR 주소: PC 에서 localhost 로 열었으면 폰이 접속할 수 있게 내부망 IP 로 바꾼다.
   useEffect(() => {
@@ -173,6 +192,16 @@ export default function KioskPage() {
         <header className="kiosk-top">
           <strong>{menu?.store ?? '키오스크'}</strong>
           <span>주문하실 메뉴를 선택해 주세요</span>
+          {stores.length > 1 && (
+            <label className="kiosk-store-pick">
+              매장{' '}
+              <select value={store} onChange={(e) => changeStore(e.target.value)}>
+                {stores.map((s) => (
+                  <option key={s.id} value={s.id}>{s.name}</option>
+                ))}
+              </select>
+            </label>
+          )}
         </header>
         <div className="kiosk-tabs">
           <button className={tab === null ? 'on' : ''} onClick={() => setTab(null)}>전체</button>
