@@ -39,6 +39,12 @@ async function listStores(): Promise<{ id: string; name: string }[]> {
   return Promise.all(Object.keys(stores).map(async (id) => ({ id, name: (await fetchMenu(id)).store })))
 }
 
+// 촬영·시연 때 브라우저 주소창 없이 실제 키오스크처럼 (F11 과 같음)
+function toggleFullscreen() {
+  if (document.fullscreenElement) document.exitFullscreen().catch(() => {})
+  else document.documentElement.requestFullscreen().catch(() => {})
+}
+
 function changeStore(id: string) {
   const q = new URLSearchParams(location.search)
   q.set('store', id)
@@ -192,6 +198,9 @@ export default function KioskPage() {
         <header className="kiosk-top">
           <strong>{menu?.store ?? '키오스크'}</strong>
           <span>주문하실 메뉴를 선택해 주세요</span>
+          <button className="kiosk-fullscreen" onClick={toggleFullscreen} title="전체 화면 (F11 과 같음)">
+            ⛶
+          </button>
           {stores.length > 1 && (
             <label className="kiosk-store-pick">
               매장{' '}

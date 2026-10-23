@@ -244,3 +244,10 @@ a.bottom-bar { min-height: var(--tap); align-items: center; justify-content: spa
 .health-box { margin: 1em 0 0; padding: 12px 14px; border-radius: 12px; border: 2px solid var(--warn); background: var(--warn-bg); color: var(--warn); }
 .health-box ul { margin: 6px 0; padding-left: 0; list-style: none; font-weight: 700; }
 .health-box small { display: block; font-size: 0.75em; color: var(--text); opacity: 0.8; }
+
+/* 키오스크: 메뉴 칸이 화면 높이를 채우게 (아래 빈 공간 없이) + 전체 화면 버튼 */
+.kiosk-grid { flex: 1; grid-auto-rows: 1fr; align-content: stretch; }
+.kiosk-item { display: flex; flex-direction: column; gap: 2px; }
+.kiosk-item > * { width: 100%; text-align: center; }
+.kiosk-item > .kiosk-thumb { flex: 1; min-height: 64px; height: auto; }
+.kiosk-fullscreen { border: 0; background: rgba(255, 255, 255, 0.2); color: #fff; border-radius: 3px; padding: 0 6px; font-size: 14px; cursor: pointer; }
