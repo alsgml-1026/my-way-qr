@@ -7,7 +7,9 @@
   고른 항목(당 조심 등)은 폰에만 저장되고, 폰이 자기 설정에 맞는 태그만 강조한다.
 
 기준값을 바꾸면 이 파일만 고치면 된다.
+끄기: 환경변수 HEALTH_INFO=0 → 모든 메뉴의 health 가 null, 폰 설정 화면에서도 항목이 사라짐 (기존 화면 그대로)
 """
+import os
 
 # '많음' 기준 (1잔·1인분, 기본 옵션 기준). ❓ 초안 — 확정 필요
 LIMITS = {
@@ -29,6 +31,10 @@ ALLERGENS = {
 }
 
 
+def enabled() -> bool:
+    return os.getenv("HEALTH_INFO", "1") != "0"
+
+
 def check_store(store: dict) -> None:
     """서버가 켜질 때 메뉴 파일의 알레르기 ID 가 위 목록에 있는지 확인 (오타 방지)."""
     for item in store["items"]:
@@ -40,7 +46,7 @@ def check_store(store: dict) -> None:
 def item_health(item: dict) -> dict | None:
     """메뉴 하나의 건강 정보. 메뉴 파일에 영양 정보가 없으면 None (표시하지 않음)."""
     n = item.get("nutrition")
-    if n is None and "allergens" not in item:
+    if not enabled() or (n is None and "allergens" not in item):
         return None
     n = n or {}
     tags = []

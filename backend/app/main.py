@@ -29,7 +29,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
-from .health import check_store, item_health
+from .health import check_store, enabled as health_enabled, item_health
 from .transform import transform as ai_transform, warm_cache
 
 load_dotenv(Path(__file__).resolve().parent.parent / ".env", override=True)
@@ -64,7 +64,8 @@ def _warm():
 
 @app.get("/api/health")
 def health():
-    return {"ok": True, "stores": {k: v["version"] for k, v in STORES.items()}}
+    return {"ok": True, "stores": {k: v["version"] for k, v in STORES.items()},
+            "features": {"health": health_enabled()}}  # 폰 설정 화면이 건강 항목을 보일지 정함
 
 
 # ───────────────── B. 메뉴 ─────────────────

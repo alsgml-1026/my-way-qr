@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { fetchFeatures } from '../api'
 import { ALLERGEN_CHOICES, HEALTH_NOTE, WATCH_CHOICES } from '../health'
 import { DEFAULT_PROFILE, loadProfile, profileAttrs, saveProfile, type FontSize, type Profile } from '../profile'
 
@@ -9,6 +10,13 @@ export default function SetupPage() {
   const navigate = useNavigate()
   const [p, setP] = useState<Profile>(() => loadProfile() ?? DEFAULT_PROFILE)
   const set = <K extends keyof Profile>(k: K, v: Profile[K]) => setP((prev) => ({ ...prev, [k]: v }))
+  // 건강 표시는 서버에서 켜져 있을 때만 보인다 (못 물어보면 숨김 → 기존 설정 화면 그대로)
+  const [healthOn, setHealthOn] = useState(false)
+  useEffect(() => {
+    fetchFeatures()
+      .then((f) => setHealthOn(f.health))
+      .catch(() => setHealthOn(false))
+  }, [])
   // 여러 개 고르는 항목: 누를 때마다 넣었다 뺐다 (빠르게 연달아 눌러도 앞의 선택이 사라지지 않게 prev 기준)
   const flip = <K extends 'watch' | 'allergies'>(k: K, v: Profile[K][number]) =>
     setP((prev) => {
@@ -49,40 +57,44 @@ export default function SetupPage() {
         <Toggle label="진한 색 (고대비)" hint="검은 바탕에 밝은 글씨로 또렷하게" value={p.highContrast} onChange={(v) => set('highContrast', v)} />
 
         {/* 건강 맞춤 표시 — 고른 내용은 이 폰에만 저장되고 서버로 보내지 않는다 */}
-        <section className="setting">
-          <h2>조심하는 것 (고르지 않아도 돼요)</h2>
-          <p className="muted small-hint">고르면 메뉴에 표시해 드려요. 이 정보는 이 폰에만 저장돼요.</p>
-          <div className="chip-row" role="group" aria-label="조심할 성분">
-            {WATCH_CHOICES.map((w) => (
-              <button
-                key={w.id}
-                role="checkbox"
-                aria-checked={p.watch.includes(w.id)}
-                className={'choice' + (p.watch.includes(w.id) ? ' selected' : '')}
-                onClick={() => flip('watch', w.id)}
-              >
-                {w.label}
-              </button>
-            ))}
-          </div>
-          <h2>알레르기</h2>
-          <div className="chip-row" role="group" aria-label="알레르기">
-            {ALLERGEN_CHOICES.map((a) => (
-              <button
-                key={a.id}
-                role="checkbox"
-                aria-checked={p.allergies.includes(a.id)}
-                className={'choice' + (p.allergies.includes(a.id) ? ' selected' : '')}
-                onClick={() => flip('allergies', a.id)}
-              >
-                {a.label}
-              </button>
-            ))}
-          </div>
-          <p className="muted small-hint">{HEALTH_NOTE}</p>
-        </section>
+        {healthOn && (
+          <>
+            <section className="setting">
+              <h2>조심하는 것 (고르지 않아도 돼요)</h2>
+              <p className="muted small-hint">고르면 메뉴에 표시해 드려요. 이 정보는 이 폰에만 저장돼요.</p>
+              <div className="chip-row" role="group" aria-label="조심할 성분">
+                {WATCH_CHOICES.map((w) => (
+                  <button
+                    key={w.id}
+                    role="checkbox"
+                    aria-checked={p.watch.includes(w.id)}
+                    className={'choice' + (p.watch.includes(w.id) ? ' selected' : '')}
+                    onClick={() => flip('watch', w.id)}
+                  >
+                    {w.label}
+                  </button>
+                ))}
+              </div>
+              <h2>알레르기</h2>
+              <div className="chip-row" role="group" aria-label="알레르기">
+                {ALLERGEN_CHOICES.map((a) => (
+                  <button
+                    key={a.id}
+                    role="checkbox"
+                    aria-checked={p.allergies.includes(a.id)}
+                    className={'choice' + (p.allergies.includes(a.id) ? ' selected' : '')}
+                    onClick={() => flip('allergies', a.id)}
+                  >
+                    {a.label}
+                  </button>
+                ))}
+              </div>
+              <p className="muted small-hint">{HEALTH_NOTE}</p>
+            </section>
 
-        <Toggle label="칼로리 보기" hint="메뉴마다 칼로리를 보여 드려요" value={p.showKcal} onChange={(v) => set('showKcal', v)} />
+            <Toggle label="칼로리 보기" hint="메뉴마다 칼로리를 보여 드려요" value={p.showKcal} onChange={(v) => set('showKcal', v)} />
+          </>
+        )}
 
         <section className="preview" aria-label="미리 보기">
           <p className="muted">미리 보기</p>

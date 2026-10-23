@@ -70,6 +70,10 @@ export const createSession = (store: string) => call<{ session: string; store: s
 /** E. 창구 상태 확인 (키오스크가 2초마다) */
 export const getSession = (sid: string) => call<SessionState>(`/api/sessions/${encodeURIComponent(sid)}`)
 
+/** 서버에서 켜고 끄는 기능 (건강 표시: 환경변수 HEALTH_INFO=0 이면 꺼짐) */
+export const fetchFeatures = () =>
+  call<{ features?: { health?: boolean } }>('/api/health').then((r) => ({ health: r.features?.health ?? false }))
+
 /** 개발용: PC 내부망 IP (QR 주소 만들 때) */
 export const fetchHost = () => call<{ ip: string }>('/api/host')
 
