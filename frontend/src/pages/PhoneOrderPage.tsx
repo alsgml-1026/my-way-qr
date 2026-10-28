@@ -1,18 +1,16 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { won } from '../api'
 import { loadCart } from '../cart'
 import { healthAlerts } from '../health'
-import { describeProfile, loadProfile, profileAttrs } from '../profile'
+import { loadProfile, profileAttrs } from '../profile'
 import { useScreen } from '../useScreen'
 import { readVisit } from '../visit'
 
-// 폰 주문 화면
-// 1) 원본 메뉴를 먼저 보여 주고 (바로 주문 가능)
-// 2) AI 맞춤 화면이 도착하면 바꿔 끼운다 (AI 가 실패하면 원본 그대로)
-// 메뉴를 누르면 → 옵션(한 화면 한 질문, ItemOptionsPage) → 주문 목록(CartPage) → 완료(DonePage)
+// 폰 주문 화면 (어르신·장애인 친화 다이어트 버전)
+// - 상단 잡다한 시스템 배너를 없애고 큼직한 카테고리 탭 제공
+// - 각 메뉴 카드는 [신호등 배지 1개 + 왕큰 메뉴명/가격 + 쉬운 말 한 줄 설명] 3요소로 압축
 export default function PhoneOrderPage() {
-  // QR 주소의 매장·창구를 먼저 저장해 둔다 (설정 화면을 다녀와도 유지)
   const { search } = useLocation()
   const visit = useMemo(() => readVisit(search), [search])
   const navigate = useNavigate()
@@ -20,52 +18,87 @@ export default function PhoneOrderPage() {
   const { screen, aiState, error } = useScreen(visit.store, profile)
   const cart = loadCart(visit.session)
   const count = cart.reduce((n, l) => n + l.qty, 0)
+  const [activeTab, setActiveTab] = useState<string>('전체')
 
   if (!profile) return <Navigate to="/m/setup" replace />
 
   const groups = screen?.groups ?? []
+  const tabNames = ['전체', ...groups.map((g) => g.title)]
+  const visibleGroups = activeTab === '전체' ? groups : groups.filter((g) => g.title === activeTab)
+  const hasHealthWatch = profile.watch.length > 0 || profile.allergies.length > 0
 
   return (
     <div className="app" {...profileAttrs(profile)}>
       <main className="page">
-        <header className="order-head">
-          <h1>{screen?.store ?? '메뉴'}</h1>
-          <div className="profile-bar">
-            <span>내 설정: {describeProfile(profile).join(' · ')}</span>
-            <Link to="/m/setup" className="link">바꾸기</Link>
+        <header className="order-head clean-head">
+          <div className="order-title-row">
+            <h1>{screen?.store ?? '메뉴'}</h1>
+            <Link to="/m/setup" className="btn setting-btn">
+              글씨·건강 설정
+            </Link>
           </div>
-          {visit.session && <p className="muted small">키오스크 창구 {visit.session}에 연결됐어요</p>}
-          <p className={'ai-badge ' + aiState} role="status">
-            {aiState === 'loading' && '내 설정에 맞게 화면을 바꾸는 중이에요…'}
-            {aiState === 'done' && '✓ 내 설정에 맞게 바꾼 화면이에요'}
-            {aiState === 'failed' && '원래 메뉴 화면이에요 (바로 주문할 수 있어요)'}
-          </p>
+          {aiState === 'loading' && (
+            <p className="ai-badge loading" role="status">
+              쉬운 말 메뉴판으로 바꾸는 중이에요…
+            </p>
+          )}
         </header>
+
+        {groups.length > 1 && (
+          <nav className="cat-tabs" aria-label="메뉴 종류">
+            {tabNames.map((t) => (
+              <button
+                key={t}
+                type="button"
+                className={'cat-tab' + (activeTab === t ? ' active' : '')}
+                onClick={() => setActiveTab(t)}
+              >
+                {t}
+              </button>
+            ))}
+          </nav>
+        )}
 
         {error && <p className="error" role="alert">{error} — 서버가 켜져 있는지 확인해 주세요.</p>}
         {!groups.length && !error && <p className="muted">메뉴를 불러오는 중이에요…</p>}
 
-        {groups.map((g) => (
+        {visibleGroups.map((g) => (
           <section key={g.title} className="category">
-            <h2>{g.title}</h2>
+            {activeTab === '전체' && <h2 className="cat-heading">{g.title}</h2>}
             <ul className="item-list">
               {g.items.map((it) => {
                 const alerts = healthAlerts(it.health, profile)
-                const kcal = profile.showKcal ? it.health?.kcal : null
+                const kcal = profile.showKcal && it.health?.kcal != null ? `${it.health.kcal.toLocaleString('ko-KR')}kcal` : null
+                const isWarn = alerts.length > 0
+
+                // 배지 여러 개를 신호등 배지 딱 1줄로 합침
+                let badgeText = ''
+                if (isWarn) {
+                  const alertSummary = alerts.map((a) => a.text).join(' · ')
+                  badgeText = kcal ? `⚠️ ${alertSummary} · ${kcal}` : `⚠️ ${alertSummary}`
+                } else if (hasHealthWatch) {
+                  badgeText = kcal ? `● 안심 (주의 성분 없음) · ${kcal}` : '● 안심 (주의 성분 없음)'
+                } else if (kcal) {
+                  badgeText = kcal
+                }
+
                 return (
                   <li key={it.id}>
-                    <button className="card item" onClick={() => navigate(`/m/item/${encodeURIComponent(it.id)}`)}>
-                      <span className="item-name">{it.name}</span>
-                      <span className="item-desc">{it.desc}</span>
-                      {(alerts.length > 0 || kcal != null) && (
-                        <span className="health-row">
-                          {alerts.map((a) => (
-                            <span key={a.key} className="health-tag warn">⚠ {a.text}</span>
-                          ))}
-                          {kcal != null && <span className="health-tag">{kcal.toLocaleString('ko-KR')}kcal</span>}
+                    <button
+                      type="button"
+                      className={'card item clean-item' + (isWarn ? ' item-warn-border' : '')}
+                      onClick={() => navigate(`/m/item/${encodeURIComponent(it.id)}`)}
+                    >
+                      {badgeText && (
+                        <span className={'signal-badge ' + (isWarn ? 'warn' : hasHealthWatch ? 'safe' : 'neutral')}>
+                          {badgeText}
                         </span>
                       )}
-                      <span className="item-price">{won(it.price)}</span>
+                      <div className="item-main-row">
+                        <span className="item-name">{it.name}</span>
+                        <span className="item-price">{won(it.price)}</span>
+                      </div>
+                      {it.desc && <span className="item-desc-easy">{it.desc}</span>}
                     </button>
                   </li>
                 )
@@ -76,11 +109,12 @@ export default function PhoneOrderPage() {
 
         {count > 0 && (
           <Link className="bottom-bar" to="/m/cart">
-            <span>주문할 메뉴 {count}개</span>
-            <span>주문 목록 보기 →</span>
+            <span>담은 메뉴 {count}개</span>
+            <span>주문하기 →</span>
           </Link>
         )}
       </main>
     </div>
   )
 }
+
