@@ -251,3 +251,111 @@ a.bottom-bar { min-height: var(--tap); align-items: center; justify-content: spa
 .kiosk-item > * { width: 100%; text-align: center; }
 .kiosk-item > .kiosk-thumb { flex: 1; min-height: 64px; height: auto; }
 .kiosk-fullscreen { border: 0; background: rgba(255, 255, 255, 0.2); color: #fff; border-radius: 3px; padding: 0 6px; font-size: 14px; cursor: pointer; }
+
+/* ───── ATM 카드식 설정 화면 (/m/setup) ───── */
+.atm-page { padding-top: 16px; }
+.atm-step-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 14px; gap: 12px;
+}
+.atm-brand { font-weight: 800; color: var(--accent); font-size: 0.95em; }
+.atm-back { margin-bottom: 0; min-height: 44px; padding: 0 14px; font-size: 0.9em; }
+.atm-step-badge {
+  background: var(--accent); color: var(--accent-text);
+  font-weight: 800; font-size: 0.85em; padding: 6px 14px; border-radius: 999px;
+}
+.atm-card {
+  background: var(--surface); border: 3px solid var(--line);
+  border-radius: 20px; padding: 22px 18px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+}
+.atm-question { font-size: 1.35em; line-height: 1.35; margin: 0 0 6px; font-weight: 900; }
+.atm-sub { color: var(--muted); font-size: 0.9em; margin: 0 0 18px; }
+.atm-choice-stack { display: flex; flex-direction: column; gap: 14px; }
+.atm-big-btn {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 6px;
+  width: 100%; padding: 18px 20px; border-radius: 16px;
+  border: 3px solid var(--line); background: var(--surface);
+  text-align: left; cursor: pointer; transition: transform 0.08s ease, border-color 0.12s ease;
+}
+.atm-big-btn:active { transform: scale(0.99); }
+.atm-big-btn.primary-choice { border-color: var(--accent); background: var(--selected); }
+.atm-big-btn.selected { border-color: var(--accent); background: var(--selected); }
+.atm-btn-badge {
+  display: inline-block; background: var(--accent); color: var(--accent-text);
+  font-size: 0.75em; font-weight: 800; padding: 3px 10px; border-radius: 999px;
+}
+.atm-btn-title { font-size: 1.15em; font-weight: 900; }
+.atm-btn-desc { font-size: 0.85em; color: var(--muted); font-weight: 500; }
+.atm-contrast-toggle { margin-top: 16px; }
+
+.atm-check-btn {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  width: 100%; padding: 16px 18px; border-radius: 16px;
+  border: 3px solid var(--line); background: var(--surface);
+  text-align: left; cursor: pointer;
+}
+.atm-check-btn.selected { border-color: var(--accent); background: var(--selected); }
+.atm-check-text { display: flex; flex-direction: column; gap: 4px; }
+.atm-check-pill {
+  flex: none; font-weight: 800; font-size: 0.85em;
+  padding: 6px 14px; border-radius: 999px; border: 2px solid var(--line);
+}
+.atm-check-btn.selected .atm-check-pill {
+  background: var(--accent); color: var(--accent-text); border-color: var(--accent);
+}
+.atm-allergy-details {
+  margin-top: 16px; padding: 12px 14px; border-radius: 12px;
+  border: 2px dashed var(--line); font-weight: 700; font-size: 0.9em;
+}
+.atm-allergy-details summary { cursor: pointer; }
+.atm-allergy-chips { margin-top: 12px; }
+.atm-start-btn { font-size: 1.15em; min-height: 76px; border-radius: 16px; margin-top: 20px; }
+
+/* ───── 깔끔한 메뉴판 (/m) ───── */
+.clean-head { margin-bottom: 12px; }
+.order-title-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.order-title-row h1 { margin: 0; font-size: 1.45em; font-weight: 900; }
+.setting-btn { min-height: 46px; font-size: 0.82em; padding: 0 14px; border-radius: 999px; }
+
+.cat-tabs {
+  display: flex; gap: 8px; overflow-x: auto; padding: 4px 0 12px;
+  margin-bottom: 8px; border-bottom: 2px solid var(--line);
+}
+.cat-tab {
+  flex: 1 0 auto; min-height: 52px; padding: 0 18px; border-radius: 14px;
+  border: 2px solid var(--line); background: var(--surface);
+  font-weight: 800; font-size: 0.95em; cursor: pointer;
+}
+.cat-tab.active {
+  background: var(--accent); color: var(--accent-text); border-color: var(--accent);
+}
+.cat-heading { margin: 1em 0 0.4em; font-size: 1.1em; color: var(--accent); }
+
+.clean-item {
+  gap: 8px; padding: 18px 20px; border-radius: 18px; border-width: 3px;
+}
+.clean-item.item-warn-border { border-color: #e0a899; }
+.signal-badge {
+  display: inline-flex; align-self: flex-start;
+  font-size: 0.82em; font-weight: 800; padding: 4px 12px; border-radius: 999px;
+}
+.signal-badge.warn {
+  color: var(--warn); background: var(--warn-bg); border: 2px solid var(--warn);
+}
+.signal-badge.safe {
+  color: #14532d; background: #dcfce7; border: 2px solid #16a34a;
+}
+.signal-badge.neutral {
+  color: var(--muted); background: var(--bg); border: 2px solid var(--line);
+}
+.item-main-row {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 12px; width: 100%;
+}
+.item-main-row .item-name { font-size: 1.25em; font-weight: 900; }
+.item-main-row .item-price { font-size: 1.1em; font-weight: 800; color: var(--accent); flex: none; }
+.item-desc-easy {
+  display: block; width: 100%; padding: 8px 12px; border-radius: 10px;
+  background: var(--bg); color: var(--text); font-size: 0.92em; font-weight: 700;
+}
+
