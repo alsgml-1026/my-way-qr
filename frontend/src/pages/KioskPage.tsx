@@ -7,6 +7,7 @@ import {
   fetchMenu,
   fetchTestResults,
   getSession,
+  listStores,
   startTest,
   won,
   type Menu,
@@ -31,13 +32,6 @@ const TEST_DONE_SHOW_MS = 30000 // 테스트 때는 진행자가 결과를 볼 �
 
 type Done = { orderNo: number; total: number; channel: 'phone' | 'kiosk' | null; seconds: number | null }
 type Picking = { item: MenuItem; chosen: Record<string, string>; qty: number }
-
-// 서버에 있는 매장 목록 (매장 파일만 추가하면 여기 자동으로 나타난다)
-async function listStores(): Promise<{ id: string; name: string }[]> {
-  const res = await fetch('/api/health')
-  const { stores } = (await res.json()) as { stores: Record<string, string> }
-  return Promise.all(Object.keys(stores).map(async (id) => ({ id, name: (await fetchMenu(id)).store })))
-}
 
 // 촬영·시연 때 브라우저 주소창 없이 실제 키오스크처럼 (F11 과 같음)
 function toggleFullscreen() {

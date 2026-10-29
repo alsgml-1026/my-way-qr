@@ -64,6 +64,12 @@ const json = (body: unknown): RequestInit => ({
 /** B. 매장 원본 메뉴 */
 export const fetchMenu = (store: string) => call<Menu>(`/api/menu?store=${encodeURIComponent(store)}`)
 
+/** 서버에 있는 매장 목록 (매장 파일·메뉴판 사진으로 만든 매장이 자동으로 나타난다) — 키오스크·폰 매장 고르기 */
+export async function listStores(): Promise<{ id: string; name: string }[]> {
+  const { stores } = await call<{ stores: Record<string, string> }>('/api/health')
+  return Promise.all(Object.keys(stores).map(async (id) => ({ id, name: (await fetchMenu(id)).store })))
+}
+
 /** A. 주문 창구 열기 (키오스크) */
 export const createSession = (store: string) => call<{ session: string; store: string }>('/api/sessions', json({ store }))
 
