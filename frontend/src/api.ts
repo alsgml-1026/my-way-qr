@@ -206,3 +206,48 @@ export const startTest = (session: string, participant: string) =>
   call<TestState & { session: string }>(`/api/sessions/${encodeURIComponent(session)}/test-start`, json({ participant }))
 
 export const fetchTestResults = () => call<TestResult[]>('/api/test-results')
+
+// ───── C-2. 신박한 AI 3대 확장 기능 (음성/의도 주문 · 대체 추천 · 메뉴판 비전) ─────
+export interface IntentOrderResult {
+  utterance: string
+  itemId: string
+  itemName: string
+  qty?: number
+  options: Record<string, string>
+  optionSummary: string
+  unitPrice: number
+  totalPrice?: number
+  reason: string
+  health: Health | null
+  source: 'ai' | 'rule-fallback'
+}
+
+export interface SmartSwapOption {
+  type: 'option' | 'item'
+  title: string
+  desc: string
+  itemId: string
+  itemName: string
+  overrideOptions: Record<string, string>
+  price: number
+}
+
+export interface SmartSwapResult {
+  hasWarning: boolean
+  warningSummary?: string
+  aiMessage?: string
+  swaps: SmartSwapOption[]
+}
+
+export const requestStt = (audioBase64: string, mimeType = 'audio/webm') =>
+  call<{ text: string }>('/api/stt', json({ audioBase64, mimeType }))
+
+export const requestIntentOrder = (store: string, utterance: string, watch: string[], allergies: string[]) =>
+  call<IntentOrderResult>('/api/intent-order', json({ store, utterance, watch, allergies }))
+
+export const requestSmartSwap = (store: string, itemId: string, watch: string[], allergies: string[]) =>
+  call<SmartSwapResult>('/api/smart-swap', json({ store, itemId, watch, allergies }))
+
+export const requestVisionStore = (storeName: string, imageBase64?: string) =>
+  call<{ ok: boolean; store: Menu }>('/api/vision-store', json({ storeName, imageBase64 }))
+

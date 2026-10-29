@@ -29,6 +29,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
+from .ai_assist import generate_store_from_vision, recommend_by_intent, suggest_smart_swap, transcribe_audio_base64
 from .health import check_store, enabled as health_enabled, item_health
 from .transform import transform as ai_transform, warm_cache
 
@@ -52,7 +53,7 @@ def get_store(store_id: str) -> dict:
     return store
 
 
-app = FastAPI(title="내 방식 QR API", version="0.2.0")
+app = FastAPI(title="내 방식 QR API", version="0.3.0")
 
 
 # 서버가 켜지면 뒤에서 AI 화면을 미리 만들어 둔다 (끄려면 .env 에 WARM_CACHE=0)
@@ -95,6 +96,57 @@ def transform_screen(body: TransformRequest):
     # 공개 배포에서는 ALLOW_FRESH=0 → 누구나 캐시를 건너뛰어 AI 비용을 쓰게 하지 않는다
     fresh = body.fresh and os.getenv("ALLOW_FRESH", "1") != "0"
     return ai_transform(store, body.profile.fontSize, body.profile.easyWords, fresh=fresh)
+
+
+# ───────────────── C-2. 신박한 AI 3대 확장 기능 (음성/의도 주문 · 대체 추천 · 메뉴판 비전) ─────────────────
+class SttRequest(BaseModel):
+    audioBase64: str
+    mimeType: str = "audio/webm"
+
+
+@app.post("/api/stt")
+def stt_endpoint(body: SttRequest):
+    text = transcribe_audio_base64(body.audioBase64, body.mimeType)
+    return {"text": text}
+
+
+class IntentOrderRequest(BaseModel):
+    store: str = DEFAULT_STORE
+    utterance: str = Field(min_length=1, max_length=300)
+    watch: list[str] = Field(default_factory=list)
+    allergies: list[str] = Field(default_factory=list)
+
+
+@app.post("/api/intent-order")
+def intent_order_endpoint(body: IntentOrderRequest):
+    store = get_store(body.store)
+    return recommend_by_intent(store, body.utterance, body.watch, body.allergies)
+
+
+class SmartSwapRequest(BaseModel):
+    store: str = DEFAULT_STORE
+    itemId: str
+    watch: list[str] = Field(default_factory=list)
+    allergies: list[str] = Field(default_factory=list)
+
+
+@app.post("/api/smart-swap")
+def smart_swap_endpoint(body: SmartSwapRequest):
+    store = get_store(body.store)
+    return suggest_smart_swap(store, body.itemId, body.watch, body.allergies)
+
+
+class VisionStoreRequest(BaseModel):
+    storeName: str = "정겨운 우리동네 국수·분식"
+    imageBase64: str | None = None
+
+
+@app.post("/api/vision-store")
+def vision_store_endpoint(body: VisionStoreRequest):
+    new_store = generate_store_from_vision(body.storeName, body.imageBase64)
+    check_store(new_store)
+    STORES[new_store["id"]] = new_store
+    return {"ok": True, "store": new_store}
 
 
 # ───────────────── A·E. 주문 창구(세션) ─────────────────

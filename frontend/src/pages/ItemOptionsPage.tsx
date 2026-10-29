@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Navigate, useLocation, useNavigate, useParams } from 'react-router-dom'
-import { won } from '../api'
+import { requestSmartSwap, won, type SmartSwapOption, type SmartSwapResult } from '../api'
 import { addToCart } from '../cart'
 import { HEALTH_NOTE, healthAlerts } from '../health'
 import { loadProfile, profileAttrs } from '../profile'
@@ -8,9 +8,7 @@ import { useScreen } from '../useScreen'
 import { countUndo } from '../undo'
 import { readVisit } from '../visit'
 
-// 옵션 고르기 — 한 화면에 질문 하나 (AGENTS.md 3. 옵션 화면이 지킬 약속)
-// 질문·선택지 문구는 AI 가 바꾼 것(question, label), 순서는 서버가 정렬해 준 item.options 그대로.
-// 질문을 다 고르면 마지막 화면에서 개수를 정하고 주문 목록에 담는다.
+// 옵션 고르기 — 한 화면에 질문 하나 + 위험 메뉴 선택 시 AI 건강 대체재 역제안 (Smart Swap)
 export default function ItemOptionsPage() {
   const { itemId } = useParams()
   const { search } = useLocation()
@@ -21,6 +19,21 @@ export default function ItemOptionsPage() {
   const [step, setStep] = useState(0)
   const [chosen, setChosen] = useState<Record<string, string>>({})
   const [qty, setQty] = useState(1)
+  const [swapRes, setSwapRes] = useState<SmartSwapResult | null>(null)
+  const [appliedOptionNotice, setAppliedOptionNotice] = useState<string | null>(null)
+
+  useEffect(() => {
+    setStep(0)
+    setChosen({})
+    setSwapRes(null)
+    setAppliedOptionNotice(null)
+    if (!itemId || !profile) return
+    if (profile.watch.length > 0 || profile.allergies.length > 0) {
+      requestSmartSwap(visit.store, itemId, profile.watch, profile.allergies)
+        .then(setSwapRes)
+        .catch(() => setSwapRes(null))
+    }
+  }, [itemId, visit.store]) // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!profile) return <Navigate to="/m/setup" replace />
 
@@ -28,17 +41,41 @@ export default function ItemOptionsPage() {
   if (screen && !item) return <Navigate to="/m" replace />
 
   const keys = item?.options ?? []
-  const alerts = healthAlerts(item?.health, profile)
+  const rawAlerts = healthAlerts(item?.health, profile)
+  const isDecafPicked = chosen.decaf === 'decaf' || chosen.shot === 'decaf'
+  const alerts = isDecafPicked ? rawAlerts.filter((a) => a.key !== 'caffeine') : rawAlerts
   const key = keys[step] as string | undefined // undefined = 질문을 다 골라서 개수 정하는 화면
   const opt = key ? screen?.options[key] : undefined
   const unit =
     (item?.price ?? 0) +
     keys.reduce((sum, k) => sum + (screen?.options[k]?.choices.find((c) => c.id === chosen[k])?.price ?? 0), 0)
 
-  const pick = (choiceId: string) => {
-    setChosen((prev) => ({ ...prev, [key!]: choiceId }))
-    setStep((s) => s + 1)
+  const advanceToNextUnchosen = (startStep: number, nextChosen: Record<string, string>) => {
+    let s = startStep
+    while (s < keys.length && nextChosen[keys[s]] !== undefined) {
+      s += 1
+    }
+    setStep(s)
   }
+
+  const pick = (choiceId: string) => {
+    const nextChosen = { ...chosen, [key!]: choiceId }
+    setChosen(nextChosen)
+    advanceToNextUnchosen(step + 1, nextChosen)
+  }
+
+  const applySmartSwap = (sw: SmartSwapOption) => {
+    if (sw.type === 'option') {
+      const nextChosen = { ...chosen, ...sw.overrideOptions }
+      setChosen(nextChosen)
+      setAppliedOptionNotice(sw.title.replace(/^✨\s*원터치 적용:\s*/, '') + ' 완료!')
+      setSwapRes(null)
+      advanceToNextUnchosen(step, nextChosen)
+    } else {
+      navigate(`/m/item/${encodeURIComponent(sw.itemId)}`)
+    }
+  }
+
   const back = () => {
     countUndo(visit.session) // 사용자 테스트: 되돌리기 횟수
     if (step > 0) setStep((s) => s - 1)
@@ -67,6 +104,35 @@ export default function ItemOptionsPage() {
                 </p>
               )}
             </header>
+
+            {appliedOptionNotice && (
+              <p className="signal-badge safe" role="status" style={{ marginBottom: 12 }}>
+                ✅ {appliedOptionNotice}
+              </p>
+            )}
+
+            {/* 신박한 AI 기능 2: 주의 성분이 든 메뉴를 골랐을 때 AI 건강 대체재 역제안 (Smart Swap) */}
+            {swapRes?.hasWarning && swapRes.swaps.length > 0 && step === 0 && (
+              <section className="smart-swap-box" aria-label="AI 건강 대체 메뉴 추천">
+                <div className="smart-swap-head">
+                  <span className="smart-swap-badge">🔄 AI 건강 지킴이 대체 제안</span>
+                  <p className="smart-swap-msg">{swapRes.aiMessage}</p>
+                </div>
+                <div className="smart-swap-list">
+                  {swapRes.swaps.map((sw) => (
+                    <button
+                      key={`${sw.type}-${sw.itemId}`}
+                      type="button"
+                      className="smart-swap-btn"
+                      onClick={() => applySmartSwap(sw)}
+                    >
+                      <span className="smart-swap-title">👉 {sw.title}</span>
+                      <span className="smart-swap-desc">{sw.desc}</span>
+                    </button>
+                  ))}
+                </div>
+              </section>
+            )}
 
             {opt && (
               <section aria-live="polite">
@@ -104,6 +170,11 @@ export default function ItemOptionsPage() {
                       </li>
                     ))}
                   </ul>
+                )}
+                {isDecafPicked && profile.watch.includes('caffeine') && (
+                  <p className="signal-badge safe" style={{ marginBottom: 10 }}>
+                    ● 디카페인 원두로 변경되어 카페인 걱정을 덜었어요
+                  </p>
                 )}
                 {/* 건강 표시: 담기 전에 한 번 더 알려 준다 (막지는 않음) */}
                 {alerts.length > 0 && (

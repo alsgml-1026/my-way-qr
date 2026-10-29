@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
-import { createOrder, won, type OrderLine } from '../api'
+import { createOrder, createSession, won, type OrderLine } from '../api'
 import { loadCart, saveCart } from '../cart'
 import { loadProfile, profileAttrs } from '../profile'
 import { useScreen } from '../useScreen'
@@ -43,21 +43,25 @@ export default function CartPage() {
     update(lines.filter((_, i) => i !== idx))
   }
 
-  const pay = () => {
-    if (!visit.session) return
+  const pay = async () => {
     setPaying(true)
     setError(null)
-    createOrder(visit.session, lines, {
-      channel: 'phone',
-      undo: readUndo(visit.session),
-      profile: { fontSize: profile.fontSize, easyWords: profile.easyWords },
-    })
-      .then((r) => {
-        saveCart(visit.session, [])
-        navigate('/m/done', { replace: true, state: { orderNo: r.orderNo, total: r.total } })
+    try {
+      // 키오스크 QR 로 들어왔으면 해당 창구(visit.session)로 결제해 키오스크 화면에 주문번호를 띄우고,
+      // /m 또는 /lab 에서 바로 들어와 창구가 없을 때는 즉시 새 창구를 열어 결제가 막히지 않게 한다.
+      const activeSession = visit.session ?? (await createSession(visit.store)).session
+      const r = await createOrder(activeSession, lines, {
+        channel: 'phone',
+        undo: readUndo(visit.session),
+        profile: { fontSize: profile.fontSize, easyWords: profile.easyWords },
       })
-      .catch((e: Error) => setError(e.message))
-      .finally(() => setPaying(false))
+      saveCart(visit.session, [])
+      navigate('/m/done', { replace: true, state: { orderNo: r.orderNo, total: r.total } })
+    } catch (e) {
+      setError(e instanceof Error ? e.message : '결제 처리 중 오류가 발생했어요')
+    } finally {
+      setPaying(false)
+    }
   }
 
   return (
@@ -87,16 +91,10 @@ export default function CartPage() {
         {lines.length > 0 && (
           <section className="pay-box">
             <p className="total-line">모두 {won(total)}</p>
-            {visit.session ? (
-              <>
-                <button className="btn primary block" onClick={pay} disabled={paying}>
-                  {paying ? '결제하는 중이에요…' : `${won(total)} 결제하기`}
-                </button>
-                <p className="muted small">시연용 결제예요. 실제로 돈이 나가지 않아요.</p>
-              </>
-            ) : (
-              <p className="error">키오스크 화면의 QR을 찍어야 주문할 수 있어요.</p>
-            )}
+            <button className="btn primary block" onClick={pay} disabled={paying}>
+              {paying ? '결제하는 중이에요…' : `${won(total)} 결제하기`}
+            </button>
+            <p className="muted small">시연용 결제예요. 실제로 돈이 나가지 않아요.</p>
             {error && <p className="error" role="alert">{error}</p>}
           </section>
         )}
