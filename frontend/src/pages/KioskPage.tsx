@@ -217,7 +217,15 @@ export default function KioskPage() {
         <div className="kiosk-grid">
           {items.map((it) => (
             <button key={it.id} className="kiosk-item" onClick={() => openItem(it)}>
-              <div className="kiosk-thumb" aria-hidden />
+              <div className="kiosk-thumb" aria-hidden>
+                {/* 메뉴 사진: frontend/public/menu/<매장>/<메뉴ID>.webp — 없으면(사진으로 만든 매장 등) 빈 칸 */}
+                <img
+                  src={`/menu/${encodeURIComponent(store)}/${encodeURIComponent(it.id)}.webp`}
+                  alt=""
+                  loading="lazy"
+                  onError={(e) => (e.currentTarget.style.display = 'none')}
+                />
+              </div>
               <div className="kiosk-name">{it.name}</div>
               <div className="kiosk-desc">{it.desc}</div>
               <div className="kiosk-price">{won(it.price)}</div>

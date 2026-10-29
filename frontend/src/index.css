@@ -250,6 +250,8 @@ a.bottom-bar { min-height: var(--tap); align-items: center; justify-content: spa
 .kiosk-item { display: flex; flex-direction: column; gap: 2px; }
 .kiosk-item > * { width: 100%; text-align: center; }
 .kiosk-item > .kiosk-thumb { flex: 1; min-height: 64px; height: auto; }
+.kiosk-thumb { position: relative; overflow: hidden; }
+.kiosk-thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .kiosk-fullscreen { border: 0; background: rgba(255, 255, 255, 0.2); color: #fff; border-radius: 3px; padding: 0 6px; font-size: 14px; cursor: pointer; }
 
 /* ───── ATM 카드식 설정 화면 (/m/setup) ───── */
