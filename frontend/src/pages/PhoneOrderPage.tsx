@@ -1,6 +1,6 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
-import { createOrder, createSession, requestIntentOrder, requestStt, won, type IntentOrderResult } from '../api'
+import { createOrder, createSession, listStores, requestIntentOrder, requestStt, won, type IntentOrderResult } from '../api'
 import { addToCart, loadCart, saveCart } from '../cart'
 import { healthAlerts } from '../health'
 import { loadProfile, profileAttrs } from '../profile'
@@ -56,6 +56,21 @@ export default function PhoneOrderPage() {
   const mediaRecRef = useRef<MediaRecorder | null>(null)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const speechRecRef = useRef<any>(null)
+
+  // 매장 고르기: 키오스크 QR 없이 /m 으로 바로 들어온 경우만 (QR 로 오면 매장이 이미 정해져 있음)
+  const [stores, setStores] = useState<{ id: string; name: string }[]>([])
+  useEffect(() => {
+    if (visit.session) return
+    listStores().then(setStores).catch(() => {}) // 목록을 못 받아도 지금 매장은 그대로 동작
+  }, [visit.session])
+  const changeStore = (id: string) => {
+    if (id === visit.store) return
+    saveCart(null, []) // 다른 매장 메뉴가 주문 목록에 섞이지 않게
+    setIntentRes(null)
+    setUtterance('')
+    setActiveTab('전체')
+    navigate(`/m?store=${encodeURIComponent(id)}`)
+  }
 
   if (!profile) return <Navigate to="/m/setup" replace />
 
@@ -205,6 +220,21 @@ export default function PhoneOrderPage() {
               글씨·건강 설정
             </Link>
           </div>
+          {!visit.session && stores.length > 1 && (
+            <nav className="store-pick" aria-label="매장 고르기">
+              {stores.map((s) => (
+                <button
+                  key={s.id}
+                  type="button"
+                  className={`store-pick-btn${s.id === visit.store ? ' active' : ''}`}
+                  aria-pressed={s.id === visit.store}
+                  onClick={() => changeStore(s.id)}
+                >
+                  {s.name}
+                </button>
+              ))}
+            </nav>
+          )}
           {aiState === 'loading' && (
             <p className="ai-badge loading" role="status">
               쉬운 말 메뉴판으로 바꾸는 중이에요…

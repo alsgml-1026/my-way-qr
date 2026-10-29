@@ -250,6 +250,8 @@ a.bottom-bar { min-height: var(--tap); align-items: center; justify-content: spa
 .kiosk-item { display: flex; flex-direction: column; gap: 2px; }
 .kiosk-item > * { width: 100%; text-align: center; }
 .kiosk-item > .kiosk-thumb { flex: 1; min-height: 64px; height: auto; }
+.kiosk-thumb { position: relative; overflow: hidden; }
+.kiosk-thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .kiosk-fullscreen { border: 0; background: rgba(255, 255, 255, 0.2); color: #fff; border-radius: 3px; padding: 0 6px; font-size: 14px; cursor: pointer; }
 
 /* ───── ATM 카드식 설정 화면 (/m/setup) ───── */
@@ -317,6 +319,15 @@ a.bottom-bar { min-height: var(--tap); align-items: center; justify-content: spa
 .order-title-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .order-title-row h1 { margin: 0; font-size: 1.45em; font-weight: 900; }
 .setting-btn { min-height: 46px; font-size: 0.82em; padding: 0 14px; border-radius: 999px; }
+
+/* 폰 매장 고르기 (QR 없이 /m 으로 바로 들어온 경우) */
+.store-pick { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.store-pick-btn {
+  flex: 1 1 40%; min-height: var(--tap); padding: 0 12px; border-radius: 12px;
+  border: 2px solid var(--line); background: var(--surface); color: var(--text);
+  font-weight: 800; font-size: 0.9em; cursor: pointer;
+}
+.store-pick-btn.active { background: var(--selected); border-color: var(--accent); color: var(--accent); }
 
 .cat-tabs {
   display: flex; gap: 8px; overflow-x: auto; padding: 4px 0 12px;
